@@ -5,13 +5,9 @@
 select * from glob('/local/s3/**/*.json')
 ```
 
-```sql
--- list all json files in local/s3
-select * from glob('/local/s3/*/*.json')
-```
 
 ```sql
--- list /local
+-- list /local contents
 select * from glob('/local/*/')
 ```
 
@@ -25,7 +21,7 @@ select * from glob('/local/*/*/')
 # query a superset of the json loop files (requires s3 loop data to be downloaded)
 
 ```sql
--- only import json files in `s3/2023-11-14`
+-- only query json files in `s3/2023-11-14`
 SELECT * FROM read_json('/local/s3/2023-11-14/*.json', ignore_errors=1);
 ```
 
@@ -115,7 +111,7 @@ SELECT
   unnest(theme) as theme, 
   unnest(plugin) as plugins, 
   unnest(post) as posts,
-FROM read_json('/local/2023-11-14/*.json', ignore_errors=1);
+FROM read_json('/local/s3/2023-11-14/*.json', ignore_errors=1);
 ```
 
 See https://duckdbsnippets.com/snippets/2/using-the-exclude-function-in-duckdb for more.
