@@ -1,0 +1,6 @@
+/node_modules
+/.pnpm-store
+/.secrets
+/s3
+# stored in s3
+/duckdb/*.db*

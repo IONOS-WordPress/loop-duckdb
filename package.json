@@ -1,0 +1,9 @@
+{
+  "name": "loop-duckdb",
+  "scripts": {
+    "download-loop-data-s3": "./scripts/download-loop-data-s3.sh",
+    "upload-duckdb-s3": "./scripts/upload-duckdb-s3.sh",
+    "download-duckdb-s3": "./scripts/download-duckdb-s3.sh",
+    "start": "./scripts/start.sh"
+  }
+}
