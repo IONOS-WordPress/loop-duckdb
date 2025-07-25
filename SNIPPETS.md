@@ -116,7 +116,43 @@ FROM read_json('/local/s3/2023-11-14/*.json', ignore_errors=1);
 
 See https://duckdbsnippets.com/snippets/2/using-the-exclude-function-in-duckdb for more.
 
+# select plugins and theme array items as separate columns from json loop data superset (requires s3 loop data to be downloaded)
+
+```sql
+-- requires downloaded s3 loop json files 
+-- populate each plugin and theme of a single json file in a separate row
+SELECT
+  filename,
+  json.generic as generic, 
+  unnest(json.plugin) as plugin,
+  unnest(json.theme) as theme,
+FROM read_json('/local/s3/2023-11-14/*.json', ignore_errors=1) 
+  as json
+```
+
+# list of all unique plugin_slugs
+
+```sql
+-- list of all unique plugins
+select distinct plugin.plugin_slug as plugin_slug from plugins;
+```
+
+# how often occured a plugin_slug in loop_data
+
+```sql
+-- get occurrence of each plugin   
+SELECT 
+  plugin.plugin_slug as plugin_slug,
+  COUNT(*) AS occurrence_count
+FROM 
+  plugins
+GROUP BY 
+  plugin_slug;
+```
+
 # Links
+
+https://rmoff.net/2025/03/14/kicking-the-tyres-on-the-new-duckdb-ui/
 
 https://www.seachess.net/notes/handling-json-with-duckdb/
 

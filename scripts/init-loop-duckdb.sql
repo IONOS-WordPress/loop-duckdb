@@ -7,4 +7,20 @@ SET threads = 1;
 CREATE OR REPLACE TABLE loop_items AS
 SELECT filename, * FROM read_json_auto('/local/s3/**/*.json', ignore_errors=true);
 
+-- populate each plugin of a single json file in a separate row
+CREATE OR REPLACE TABLE themes as
+SELECT
+  filename,
+  unnest(json.theme) as theme
+FROM read_json('/local/s3/*/*.json', ignore_errors=1) 
+  as json
+
+-- populate each plugin of a single json file in a separate row
+CREATE OR REPLACE TABLE plugins as
+SELECT
+  filename,
+  unnest(json.plugin) as plugin
+FROM read_json('/local/s3/*/*.json', ignore_errors=1) 
+  as json
+
 RESET threads;
