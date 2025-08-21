@@ -150,6 +150,64 @@ GROUP BY
   plugin_slug;
 ```
 
+# top most used plugins (except our own plugins)
+
+```sql
+-- get (only non ionos) plugin installations by occurence
+-- see duckdb-ui sidebar on the right and drill in to sse results
+SELECT 
+  plugin.plugin_slug as plugin_slug
+FROM 
+  plugins
+WHERE 
+  plugin_slug NOT LIKE '%ionos%'
+```  
+
+# improved version of 'top most used plugins (except our own plugins)'
+
+```sql
+-- get (only non ionos) plugin installations by occurence
+-- see duckdb-ui sidebar on the right and drill in to sse results
+SELECT
+  plugin.plugin_slug as slug,
+  COUNT(*) OVER (PARTITION BY slug) AS occurrences
+FROM plugins
+WHERE 
+  slug NOT LIKE '%ionos%'
+ORDER BY
+  occurrences DESC
+;
+```
+
+# get top most used themes 
+
+```
+-- get (only non ionos) plugin installations by occurence
+-- see duckdb-ui sidebar on the right and drill in to sse results
+SELECT
+  theme.id as slug,
+  COUNT(*) OVER (PARTITION BY slug) AS occurrences
+FROM themes
+ORDER BY
+  occurrences DESC
+;
+
+# get top most used **KNOWN* themes  
+
+```sql
+-- get theme installations by occurence
+-- see duckdb-ui sidebar on the right and drill in to sse results
+SELECT
+  theme.id as slug,
+  theme.active as active
+FROM themes
+WHERE
+  active=true
+  and (slug LIKE '%elementor%' or slug LIKE '%divi%' or slug LIKE '%block%')
+  and slug NOT ILIKE '%child%'
+;
+```
+
 # Links
 
 https://rmoff.net/2025/03/14/kicking-the-tyres-on-the-new-duckdb-ui/
