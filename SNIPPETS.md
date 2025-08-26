@@ -191,6 +191,7 @@ FROM themes
 ORDER BY
   occurrences DESC
 ;
+```
 
 # get top most used **KNOWN* themes  
 
