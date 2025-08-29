@@ -209,6 +209,202 @@ WHERE
 ;
 ```
 
+# select all loop items for a single instance 
+
+```sql
+-- select all loop items for a single instance 
+SELECT
+  *
+FROM
+  loop_items
+WHERE
+--  file = '/local/s3/2025-08-28/0eaae944-4a57-4236-b76e-cbb20e068ca2.json'
+ instance LIKE '7cdbe7d2d8306623c02dd6d35206acd6c49fca4fca82c9d82e7ea4ead52d7032'
+;
+```
+
+# select all loop items for a single loop json file
+
+```sql
+-- select all loop items for a single loop json file
+SELECT
+  plugin.plugin_slug AS slug,
+  COUNT(*) AS occurrence_count
+FROM
+  plugins
+WHERE
+  file like '/local/s3/2025-08-28/%'
+GROUP BY
+  slug
+ORDER BY
+  occurrence_count DESC
+;
+```
+
+# select latest loop data unique for each customer and accumulate the installed plugins
+
+
+```sql
+-- 
+-- select latest loop data unique for each customer and accumulate the installed plugins
+--
+WITH RecentLoops AS (
+  SELECT
+    file AS recent_loop_file
+  FROM (
+    SELECT
+      *,
+      ROW_NUMBER() OVER (PARTITION BY instance ORDER BY "timestamp" DESC) as rn
+    FROM
+      loop_items
+  )
+  WHERE rn = 1
+)
+SELECT
+  p.plugin.plugin_slug,
+  p.instance
+FROM
+  plugins AS p
+JOIN
+  RecentLoops AS rl
+ON
+  p.file = rl.recent_loop_file;
+```
+
+# select latest loop data unique for each customer and accumulate the most active (used) plugins
+
+```sql
+-- 
+-- select latest loop data unique for each customer and accumulate the most active (used) plugins
+--
+WITH
+  RecentLoops AS (
+    SELECT
+      file AS recent_loop_file
+    FROM
+      (
+        SELECT
+          *,
+          ROW_NUMBER() OVER (
+            PARTITION BY
+              instance
+            ORDER BY
+              "timestamp" DESC
+          ) as rn
+        FROM
+          loop_items
+      )
+    WHERE
+      rn = 1
+  ),
+  RecentPlugins AS (
+    SELECT
+      p.plugin.plugin_slug,
+      p.instance,
+      p.plugin.active
+    FROM
+      plugins AS p
+      JOIN RecentLoops AS rl ON p.file = rl.recent_loop_file
+  ),
+  PluginCounts AS (
+    -- Calculate the occurrence count for each plugin
+    SELECT
+      plugin_slug AS slug,
+      COUNT(*) AS occurrence_count
+    FROM
+      RecentPlugins
+    WHERE
+      active = true -- OR active = false
+    GROUP BY
+      slug
+  ),
+  TotalCount AS (
+    -- Calculate the total number of instances
+    SELECT
+      COUNT(*) AS total_instances
+    FROM
+      RecentLoops
+  )
+  -- Select the slug, its count, and the percentage of the total
+SELECT
+  pc.slug,
+  pc.occurrence_count,
+  (pc.occurrence_count * 100.0 / tc.total_instances) AS percentage
+FROM
+  PluginCounts AS pc,
+  TotalCount AS tc
+ORDER BY
+  pc.occurrence_count DESC;
+```
+
+# select latest loop data unique for each customer and accumulate the most active (used) themes
+
+```sql
+-- 
+-- select latest loop data unique for each customer and accumulate the most active (used) themes
+--
+WITH
+  RecentLoops AS (
+    SELECT
+      file AS recent_loop_file
+    FROM
+      (
+        SELECT
+          *,
+          ROW_NUMBER() OVER (
+            PARTITION BY
+              instance
+            ORDER BY
+              "timestamp" DESC
+          ) as rn
+        FROM
+          loop_items
+--        WHERE
+--          plugin like '%"elementor"%'
+      )
+    WHERE
+      rn = 1
+  ),
+  RecentThemes AS (
+    SELECT
+      t.theme.id,
+      t.instance,
+      t.theme.active
+    FROM
+      themes AS t
+      JOIN RecentLoops AS rl ON t.file = rl.recent_loop_file
+  ),
+  ThemeCounts AS (
+    -- Calculate the occurrence count for each theme
+    SELECT
+      id as slug,
+      COUNT(*) AS occurrence_count
+    FROM
+      RecentThemes
+    WHERE
+      active = true -- OR active = false
+    GROUP BY
+      slug
+  ),
+  TotalCount AS (
+    -- Calculate the total number of instances
+    SELECT
+      COUNT(*) AS total_instances
+    FROM
+      RecentLoops
+  )
+  -- Select the slug, its count, and the percentage of the total
+SELECT
+  pc.slug,
+  pc.occurrence_count,
+  (pc.occurrence_count * 100.0 / tc.total_instances) AS percentage
+FROM
+  ThemeCounts AS pc,
+  TotalCount AS tc
+ORDER BY
+  pc.occurrence_count DESC;
+```
+
 # Links
 
 https://rmoff.net/2025/03/14/kicking-the-tyres-on-the-new-duckdb-ui/
