@@ -274,7 +274,7 @@ ON
 # select latest loop data unique for each customer and accumulate the most active (used) plugins
 
 ```sql
--- 
+-- [real insight]
 -- select latest loop data unique for each customer and accumulate the most active (used) plugins
 --
 WITH
@@ -340,7 +340,7 @@ ORDER BY
 # select latest loop data unique for each customer and accumulate the most active (used) themes
 
 ```sql
--- 
+-- [real insight]
 -- select latest loop data unique for each customer and accumulate the most active (used) themes
 --
 WITH
