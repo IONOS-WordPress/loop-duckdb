@@ -22,7 +22,7 @@ docker run \
   -q \
   --rm \
   -v $(pwd)/s3:/local/s3 \
-  -v $(pwd)/scripts/loop-duckdb.sql:/local/loop-duckdb.sql \
+  -v $(pwd)/scripts/init-loop-duckdb.sql:/local/init-loop-duckdb.sql \
   -v $(pwd)/duckdb:/local/duckdb \
   --net host \
   -it \
@@ -35,7 +35,7 @@ docker run \
     fi
 
     # start duckdb
-    /duckdb -ui ${DUCKDB_CMD:-} /local/duckdb/loop-duckdb.db
+    /duckdb -ui $DUCKDB_CMD /local/duckdb/loop-duckdb.db
 
     # persist duckdb ui database if exists
     if [[ -f /root/.duckdb/extension_data/ui/ui.db ]]; then
