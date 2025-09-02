@@ -20,7 +20,7 @@ docker run \
   -e "AWS_DEFAULT_REGION=${aws_default_region}" \
   -e "AWS_ENDPOINT_URL=${aws_endpoint_url}" \
   amazon/aws-cli \
-  s3 sync s3://loop /local/s3 --exclude "loop-duckdb"
+  s3 sync s3://loop /local/s3 --exclude "duckdb/*"
 
 if [[ -d "./s3" ]]; then
   docker run \
