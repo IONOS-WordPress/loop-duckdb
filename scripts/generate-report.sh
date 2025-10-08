@@ -99,6 +99,8 @@ WITH
       RecentPlugins
     WHERE
       active = true -- OR active = false
+      -- exclude our own plugins
+      AND plugin_slug NOT LIKE 'ionos-%'
     GROUP BY
       slug
   ),
@@ -146,6 +148,8 @@ WITH
       RecentPlugins
     WHERE
       active = true -- OR active = false
+      -- exclude our own plugins
+      AND plugin_slug NOT LIKE 'ionos-%'
     GROUP BY
       slug
   ),
