@@ -7,6 +7,7 @@
     "import-duckdb-notebooks": "./scripts/import-duckdb-notebooks.sh",
     "download-duckdb-s3": "./scripts/download-duckdb-s3.sh",
     "start": "./scripts/start.sh",
+    "generate-report": "./scripts/generate-report.sh",
     "one-shot": "./scripts/one-shot.sh"
   }
 }

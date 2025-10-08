@@ -4,3 +4,4 @@
 /s3
 # stored in s3
 /duckdb/*.db*
+/report.md
