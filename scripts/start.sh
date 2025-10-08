@@ -12,6 +12,13 @@ if [[ ! -f "./duckdb/loop-duckdb.db" ]]; then
   fi
 fi
 
+if [[ ! -f './duckdb/ui.db' ]]; then
+  echo "DuckDB ui database does not exist locally. Will import them automatically."
+  pnpm run import-duckdb-notebooks
+else
+  echo "DuckDB ui database already exists locally."
+fi
+
 # preserve checksums of duckdb database files
 declare -A database_file_checksums
 for file in $(find ./duckdb -type f ! -name 'README.md'); do

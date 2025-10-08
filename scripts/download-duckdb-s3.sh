@@ -28,7 +28,7 @@ docker run \
   -e "AWS_REQUEST_CHECKSUM_CALCULATION=when_required" \
   -e "AWS_RESPONSE_CHECKSUM_VALIDATION=when_required" \
   amazon/aws-cli \
-  s3 sync s3://loop/duckdb /local/duckdb --exclude "README.md" 
+  s3 sync s3://loop/duckdb /local/duckdb --exclude "README.md" --exclude "duckdb/notebooks/*"
 
 if [[ -d "./duckdb" ]]; then
   docker run \
