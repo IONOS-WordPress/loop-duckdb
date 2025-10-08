@@ -53,29 +53,34 @@ EQSQL
     "
 }
 
+query_duckdb "
+CREATE OR REPLACE VIEW recent_loops AS
+SELECT
+  file AS recent_loop_file,
+  instance
+FROM
+  (
+    SELECT
+      *,
+      ROW_NUMBER() OVER (
+        PARTITION BY
+          instance
+        ORDER BY
+          "timestamp" DESC
+      ) AS rn
+    FROM
+      loop_items
+  )
+WHERE
+  rn = 1;
+"
+
+# @TODO : extract RecentPlugins to a macro or view to avoid duplication
+
 most_active_plugins_markdown=$(query_duckdb "
 -- [real insight]
 -- select latest loop data unique for each customer and accumulate the most active (used) plugins
 WITH
-  RecentLoops AS (
-    SELECT
-      file AS recent_loop_file
-    FROM
-      (
-        SELECT
-          *,
-          ROW_NUMBER() OVER (
-            PARTITION BY
-              instance
-            ORDER BY
-              "timestamp" DESC
-          ) as rn
-        FROM
-          loop_items
-      )
-    WHERE
-      rn = 1
-  ),
   RecentPlugins AS (
     SELECT
       p.plugin.plugin_slug,
@@ -83,7 +88,7 @@ WITH
       p.plugin.active
     FROM
       plugins AS p
-      JOIN RecentLoops AS rl ON p.file = rl.recent_loop_file
+      JOIN recent_loops AS rl ON p.file = rl.recent_loop_file
   ),
   PluginCounts AS (
     -- Calculate the occurrence count for each plugin
@@ -98,11 +103,11 @@ WITH
       slug
   ),
   TotalCount AS (
-    -- Calculate the total number of instances
+    -- Calculate the total number of instances from the view
     SELECT
-      COUNT(*) AS total_instances
+      COUNT(*) AS total_instances -- better : COUNT(DISTINCT instance) AS total_instances
     FROM
-      RecentLoops
+      recent_loops
   )
   -- Select the slug, its count, and the percentage of the total
 SELECT
@@ -123,33 +128,14 @@ most_active_plugins_json=$(query_duckdb "
 -- [real insight]
 -- select latest loop data unique for each customer and accumulate the most active (used) plugins
 WITH
-  RecentLoops AS (
-    SELECT
-      file AS recent_loop_file
-    FROM
-      (
-        SELECT
-          *,
-          ROW_NUMBER() OVER (
-            PARTITION BY
-              instance
-            ORDER BY
-              "timestamp" DESC
-          ) as rn
-        FROM
-          loop_items
-      )
-    WHERE
-      rn = 1
-  ),
-  RecentPlugins AS (
+    RecentPlugins AS (
     SELECT
       p.plugin.plugin_slug,
       p.instance,
       p.plugin.active
     FROM
       plugins AS p
-      JOIN RecentLoops AS rl ON p.file = rl.recent_loop_file
+      JOIN recent_loops AS rl ON p.file = rl.recent_loop_file
   ),
   PluginCounts AS (
     -- Calculate the occurrence count for each plugin
@@ -166,9 +152,9 @@ WITH
   TotalCount AS (
     -- Calculate the total number of instances
     SELECT
-      COUNT(*) AS total_instances
+      COUNT(*) AS total_instances -- better : COUNT(DISTINCT instance) AS total_instances
     FROM
-      RecentLoops
+      recent_loops
   )
   -- Select the slug, its count, and the percentage of the total
 SELECT
@@ -184,7 +170,13 @@ LIMIT 10;
 " "-json"
 )
 
-cat <<EOF > report.md
+cat <<EOF | tee report.md
+---
+title: Loop Usage Report
+author: IONOS WordPress Hosting Team
+date: $(date +%Y-%m-%d)
+---
+
 # Most active plugins  
 
 $most_active_plugins_markdown
@@ -196,5 +188,3 @@ $(echo "$most_active_plugins_json" | jq -r --arg title "Most active plugins" '
 ')
 \`\`\`
 EOF
-
-# echo $most_active_plugins_json | jq .
