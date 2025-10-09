@@ -4,7 +4,7 @@ Provides tooling to explore and analyze `ionos-loop` data using DuckDB.
 
 # Setup
 
-- Create a `.env` and a `.secrets` file and configure the AWS credentials (see the `*.example` file templates).
+- Create a `.secrets` file and configure the AWS credentials (see the `*.example` file templates).
 
   - Credentials can be obtained from https://dcd.ionos.com/latest/#/key-management.
 
