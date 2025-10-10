@@ -56,7 +56,7 @@ cat <<EOF
 
 # $TITLE
 
-**IONOS plugins are excluded from the report.**
+> **IONOS plugins are excluded from the report.**
 
 $(query_duckdb "$SQL LIMIT 20;" '-markdown')
 
