@@ -35,12 +35,6 @@ function query_duckdb() {
     -it \
     --entrypoint /usr/bin/bash \
     datacatering/duckdb:v1.3.2 -c "
-      # copy duckdb ui database to it's desired location if it exists
-      if [[ -f /local/duckdb/ui.db ]]; then
-        mkdir -p /root/.duckdb/extension_data/ui
-        cp /local/duckdb/ui.* /root/.duckdb/extension_data/ui/
-      fi
-
       # start duckdb
       /duckdb $DUCKDB_CMD $ADDITIONAL_DUCKDB_ARGS /local/duckdb/loop-duckdb.db <<EQSQL
 $1
@@ -52,6 +46,7 @@ EQSQL
       chown -R 1000:1000 /local/duckdb
     "
 }
+export -f query_duckdb
 
 query_duckdb "
 CREATE OR REPLACE VIEW recent_loops AS
@@ -75,120 +70,12 @@ WHERE
   rn = 1;
 "
 
-# @TODO : extract RecentPlugins to a macro or view to avoid duplication
-
-most_active_plugins_markdown=$(query_duckdb "
--- [real insight]
--- select latest loop data unique for each customer and accumulate the most active (used) plugins
-WITH
-  RecentPlugins AS (
-    SELECT
-      p.plugin.plugin_slug,
-      p.instance,
-      p.plugin.active
-    FROM
-      plugins AS p
-      JOIN recent_loops AS rl ON p.file = rl.recent_loop_file
-  ),
-  PluginCounts AS (
-    -- Calculate the occurrence count for each plugin
-    SELECT
-      plugin_slug AS slug,
-      COUNT(*) AS occurrence_count
-    FROM
-      RecentPlugins
-    WHERE
-      active = true -- OR active = false
-      -- exclude our own plugins
-      AND plugin_slug NOT LIKE 'ionos-%'
-    GROUP BY
-      slug
-  ),
-  TotalCount AS (
-    -- Calculate the total number of instances from the view
-    SELECT
-      COUNT(*) AS total_instances -- better : COUNT(DISTINCT instance) AS total_instances
-    FROM
-      recent_loops
-  )
-  -- Select the slug, its count, and the percentage of the total
-SELECT
-  pc.slug,
-  pc.occurrence_count,
-  (pc.occurrence_count * 100.0 / tc.total_instances) AS percentage
-FROM
-  PluginCounts AS pc,
-  TotalCount AS tc
-ORDER BY
-  pc.occurrence_count DESC
-LIMIT 10;
-" "-markdown"
-)
-
-
-most_active_plugins_json=$(query_duckdb "
--- [real insight]
--- select latest loop data unique for each customer and accumulate the most active (used) plugins
-WITH
-    RecentPlugins AS (
-    SELECT
-      p.plugin.plugin_slug,
-      p.instance,
-      p.plugin.active
-    FROM
-      plugins AS p
-      JOIN recent_loops AS rl ON p.file = rl.recent_loop_file
-  ),
-  PluginCounts AS (
-    -- Calculate the occurrence count for each plugin
-    SELECT
-      plugin_slug AS slug,
-      COUNT(*) AS occurrence_count
-    FROM
-      RecentPlugins
-    WHERE
-      active = true -- OR active = false
-      -- exclude our own plugins
-      AND plugin_slug NOT LIKE 'ionos-%'
-    GROUP BY
-      slug
-  ),
-  TotalCount AS (
-    -- Calculate the total number of instances
-    SELECT
-      COUNT(*) AS total_instances -- better : COUNT(DISTINCT instance) AS total_instances
-    FROM
-      recent_loops
-  )
-  -- Select the slug, its count, and the percentage of the total
-SELECT
-  pc.slug,
-  pc.occurrence_count,
-  (pc.occurrence_count * 100.0 / tc.total_instances) AS percentage
-FROM
-  PluginCounts AS pc,
-  TotalCount AS tc
-ORDER BY
-  pc.occurrence_count DESC
-LIMIT 10;
-" "-json"
-)
-
 cat <<EOF | tee report.md
 ---
-title: Loop Usage Report
-author: IONOS WordPress Hosting Team
-date: $(date +%Y-%m-%d)
+title: IONOS Loop Usage Report
+author: WordPress Hosting Team
+date: $(date +'%Y-%m-%d %H:%M')
 ---
 
-# Most active plugins  
-
-$most_active_plugins_markdown
-
-\`\`\`mermaid
-$(echo "$most_active_plugins_json" | jq -r --arg title "Most active plugins" '
-    "pie showData title \($title)" ,
-    (.[] | "  \"\(.slug)\" : \(.occurrence_count)")
-')
-\`\`\`
+$(run-parts --regex '^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9]+)?$' ./scripts/generate-report-parts)
 EOF
