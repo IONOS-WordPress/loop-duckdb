@@ -74,7 +74,8 @@ cat <<EOF | tee report.md
 ---
 title: IONOS Loop Usage Report
 author: WordPress Hosting Team
-date: $(date +'%Y-%m-%d %H:%M')
+creation date: $(date +'%Y-%m-%d %H:%M')
+time period: all time until now
 ---
 
 $(run-parts --regex '^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9]+)?$' ./scripts/generate-report-parts)
