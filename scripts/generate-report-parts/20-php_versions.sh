@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# generates markdown output for most active plugins section of the report
+# generates markdown output for php versions of the report
 # 
 
 readonly SQL="
