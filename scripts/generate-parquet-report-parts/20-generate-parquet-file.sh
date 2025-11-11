@@ -26,7 +26,10 @@ ionos.loop-duckdb.exec_duckdb "
 "
 
 min_max=$(ionos.loop-duckdb.exec_duckdb "
-  SELECT MIN(timestamp) AS min, MAX(timestamp) AS max FROM './${REPORT_NAME}/${REPORT_NAME}.parquet';
+  SELECT 
+    STRFTIME(MIN(timestamp), '%Y-%m-%d %H:%M:%S') AS min, 
+    STRFTIME(MAX(timestamp), '%Y-%m-%d %H:%M:%S') AS max 
+  FROM './${REPORT_NAME}/${REPORT_NAME}.parquet';
 " '-json')
 
 cat <<EOF 
@@ -34,6 +37,6 @@ cat <<EOF
 title: IONOS Loop Usage Report
 author: WordPress Hosting Team
 creation date: $(date +'%Y-%m-%d %H:%M')
-time period: $(echo "$min_max" | jq -r '.[].min' | xargs -I{} date -d {} '+%Y-%m-%d %H:%M:%S') - $(echo "$min_max" | jq -r '.[].max' | xargs -I{} date -d {} '+%Y-%m-%d %H:%M:%S')
+time period: $(jq -r '.[0] | "\(.min) - \(.max)"' <<< "$min_max")
 ---
 EOF
