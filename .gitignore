@@ -5,3 +5,5 @@
 # stored in s3
 /duckdb/*.db*
 /report.md
+generate-parquet-report/generate-parquet-report.db
+generate-parquet-report/generate-parquet-report.parquet

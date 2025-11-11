@@ -8,6 +8,7 @@
     "download-duckdb-s3": "./scripts/download-duckdb-s3.sh",
     "start": "./scripts/start.sh",
     "generate-report": "./scripts/generate-report.sh",
+    "generate-parquet-report": "./scripts/generate-parquet-report.sh",
     "one-shot": "./scripts/one-shot.sh"
   }
 }
