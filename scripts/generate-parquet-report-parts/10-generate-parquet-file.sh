@@ -20,23 +20,23 @@ ionos.loop-duckdb.exec_duckdb "
       filename, 
       * EXCLUDE (timestamp),
       to_timestamp(timestamp) AS timestamp -- timestamp was a bigint, convert to timestamp type
-    FROM read_json(['$LOOP_JSON_FILES'], auto_detect=true)
+    FROM read_json(
+      ARRAY['$LOOP_JSON_FILES'], 
+      filename = true, -- Crucial: Ensures the filename is included as a column
+      ignore_errors = true,
+      columns = {
+        version: 'VARCHAR',
+        hosting: 'JSON',
+        wordpress: 'JSON',
+        events: 'JSON',
+        clicks: 'JSON',
+        plugin_data: 'JSON',
+        instance: 'VARCHAR',
+        timestamp: 'BIGINT',
+      },
+      auto_detect=true
+    )
   )
   TO './${REPORT_NAME}/${REPORT_NAME}.parquet' (FORMAT PARQUET);
 "
 
-min_max=$(ionos.loop-duckdb.exec_duckdb "
-  SELECT 
-    STRFTIME(MIN(timestamp), '%Y-%m-%d %H:%M:%S') AS min, 
-    STRFTIME(MAX(timestamp), '%Y-%m-%d %H:%M:%S') AS max 
-  FROM './${REPORT_NAME}/${REPORT_NAME}.parquet';
-" '-json')
-
-cat <<EOF 
----
-title: IONOS Loop Usage Report
-author: WordPress Hosting Team
-creation date: $(date +'%Y-%m-%d %H:%M')
-time period: $(jq -r '.[0] | "\(.min) - \(.max)"' <<< "$min_max")
----
-EOF
