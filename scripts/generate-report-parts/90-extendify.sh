@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-^# generates markdown output for extendify related questions of the report
+# generates markdown output for extendify related questions of the report
 # 
 
 readonly SQL="
