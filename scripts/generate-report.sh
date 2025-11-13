@@ -1,82 +1,78 @@
 #!/usr/bin/env bash
 
+# fail if any following command fails
+set -eo pipefail
+
+# make name of this script available in a variable without extension
+export readonly REPORT_NAME=$(basename "$0" .sh)
+
+# load the `.env`, `.env.local` and `.secrets` file from path in parameter $1 if `.env`/`.secrets` file exists.
+# bash will source the `.env`/`.secrets` and export any variable/functions declared in the file to the caller.
 #
-# generate markdown report with mermaid diagrams from duckdb database
+# @TODO: if the sourced file is a executable it will be executed and its output will be sourced end exported to the caller script
 #
+# @param $1 (optional, default is `pwd`) path to current package sub directory
+#
+function ionos.loop-duckdb.load_env() {
+  local path=$(realpath "${1:-$(pwd)}")
+  local CURRENT_ALLEXPORT_STATE="$(shopt -po allexport)"
+  # enable export all variables bash feature
+  set -a
+  for file in "$path/"{.env,.secrets,.env.local}; do
+    if [[ -f "$file" ]]; then
+      # include .env/.secret files into current bash process
+      source "$file"
+    fi
+  done
+  # restore the value of allexport option to its original value.
+  eval "$CURRENT_ALLEXPORT_STATE" >/dev/null
+}
+export -f ionos.loop-duckdb.load_env
 
-source ./scripts/include/bootstrap.sh
+# load .env/.secrets files
+ionos.loop-duckdb.load_env
 
-if [[ ! -f "./duckdb/loop-duckdb.db" ]]; then
-  # add "create and populate duckdb database"  sql arg to duckdb start command if duckdb database does not exist
-  DUCKDB_CMD="-init /local/init-loop-duckdb.sql"
+rm -rf "./${REPORT_NAME}"
+mkdir -p "./${REPORT_NAME}"
 
-  if [[ ! -d "./s3" ]] || ! find ./s3 -type f -name "*.json" -print -quit > /dev/null; then
-    echo './s3 directory does not exist or is empty. Please run "pnpm -s download-s3-loop-bucket" to download the loop data from S3.';
-    exit 1;
-  fi
+if [[ ! -d "./s3" ]] || ! find ./s3 -type f -name "*.json" -print -quit > /dev/null; then
+  echo './s3 directory does not exist or is empty. Please run "pnpm -s download-s3-loop-bucket" to download the loop data from S3.';
+  exit 1;
 fi
 
 #
 # param $1 the sql query executed in duckdb
 # optional param $2 additional duckdb arguments 
 #
-# usage: query_duckdb "<sql_query>"
+# usage: exec_duckdb "<sql_query>"
 #
-function query_duckdb() {
-  ADDITIONAL_DUCKDB_ARGS="${2:-}"
+function ionos.loop-duckdb.exec_duckdb() {
+  OPTIONAL_DUCKDB_ARGS="${2:-}"
 
   docker run \
     -q \
     --rm \
     -v $(pwd)/s3:/local/s3 \
-    -v $(pwd)/scripts/init-loop-duckdb.sql:/local/init-loop-duckdb.sql \
-    -v $(pwd)/duckdb:/local/duckdb \
+    -v $(pwd)/${REPORT_NAME}:/local/${REPORT_NAME} \
     --net host \
     -it \
     --entrypoint /usr/bin/bash \
     datacatering/duckdb:v1.3.2 -c "
       # start duckdb
-      /duckdb $DUCKDB_CMD $ADDITIONAL_DUCKDB_ARGS /local/duckdb/loop-duckdb.db <<EQSQL
+      cd /local
+
+      /duckdb $OPTIONAL_DUCKDB_ARGS ./${REPORT_NAME}/${REPORT_NAME}.db <<EQSQL
 $1
 .quit
 EQSQL
 
       # adjust file permissions of loop-duckdb database
-      chmod -R a+rw /local/duckdb
-      chown -R 1000:1000 /local/duckdb
+      chmod -R a+rw /local/${REPORT_NAME}
+      chown -R 1000:1000 /local/${REPORT_NAME}
     "
 }
-export -f query_duckdb
+export -f ionos.loop-duckdb.exec_duckdb
 
-query_duckdb "
-CREATE OR REPLACE VIEW recent_loops AS
-SELECT
-  file AS recent_loop_file,
-  instance
-FROM
-  (
-    SELECT
-      *,
-      ROW_NUMBER() OVER (
-        PARTITION BY
-          instance
-        ORDER BY
-          "timestamp" DESC
-      ) AS rn
-    FROM
-      loop_items
-  )
-WHERE
-  rn = 1;
-"
-
-cat <<EOF | tee report.md
----
-title: IONOS Loop Usage Report
-author: WordPress Hosting Team
-creation date: $(date +'%Y-%m-%d %H:%M')
-time period: all time until now
----
-
-$(run-parts --regex '^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9]+)?$' ./scripts/generate-report-parts)
+cat <<EOF | tee ./${REPORT_NAME}/${REPORT_NAME}.md
+$(run-parts --regex '^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9]+)?$' ./scripts/${REPORT_NAME}-parts)
 EOF
