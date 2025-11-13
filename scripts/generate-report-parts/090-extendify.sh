@@ -20,8 +20,8 @@ cat <<EOF
 
 \`\`\`mermaid
 $(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-json') | jq -r --arg title "$TITLE" '
-    "pie showData title \($title)",
-    (.[] | to_entries[] | "  \(.key) : \(.value)")
+    "pie showData",
+    (.[] | to_entries[] | "  \"\(.key)\" : \(.value)")
 ')
 \`\`\`
 EOF
