@@ -12,7 +12,7 @@ WITH NBAStatus AS (
     -- Extract the entire nba_status object as a JSON type
     SELECT
         instance,
-        json_extract(wordpress, '$.ionos-essentials.dashboard.nba_status') AS nba_data
+        plugin_data->'ionos-essentials'->'dashboard'->>'nba_status' AS nba_data
     FROM
         loop_items
 ),
@@ -50,7 +50,8 @@ FROM
 GROUP BY
     nba_key
 ORDER BY
-    count DESC, nba_key;
+    count DESC, nba_key
+;
 "
 
 readonly TITLE="What NBAs are used?"
@@ -59,16 +60,5 @@ cat <<EOF
 
 # $TITLE
 
+$(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-markdown'))
 EOF
-
-ionos.loop-duckdb.exec_duckdb "$SQL"
-
-ionos.loop-duckdb.exec_duckdb "
-SELECT
-    instance,
-    json_extract_string(plugin_data, '$[\"ionos-essentials\"].dashboard.nba_status') AS nba_status_json
-FROM
-    loop_items
-WHERE
-    nba_status_json IS NOT NULL
-LIMIT 5;"

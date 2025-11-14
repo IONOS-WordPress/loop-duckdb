@@ -32,8 +32,8 @@ export -f ionos.loop-duckdb.load_env
 # load .env/.secrets files
 ionos.loop-duckdb.load_env
 
-rm -rf "./${REPORT_NAME}"
-mkdir -p "./${REPORT_NAME}"
+# rm -rf "./${REPORT_NAME}"
+# mkdir -p "./${REPORT_NAME}"
 
 if [[ ! -d "./s3" ]] || ! find ./s3 -type f -name "*.json" -print -quit > /dev/null; then
   echo './s3 directory does not exist or is empty. Please run "pnpm -s download-s3-loop-bucket" to download the loop data from S3.';
