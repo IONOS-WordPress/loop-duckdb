@@ -4,15 +4,10 @@
 # create/overwrite parquet file from json files in ./s3 directory
 #
 
-# gather matching (containing '{"version":"1.0"') loop files in the format "file1.json, file2.json, file3.json"
-LOOP_JSON_FILES=$(find ./s3 -type f -name '*.json' | xargs grep -l '{"version":"1.0"' | sed ':a;N;$!ba;s/\n/\x27,\x27/g;s/\x27,\x27$//')
-
-[[ -z "$LOOP_JSON_FILES" ]] && {
-    echo "No matching LOOP JSON files found."
-    exit 1
-}
-
 ionos.loop-duckdb.exec_duckdb "
+  -- disable progress bar to prevent the progress output from being included in the report
+  SET enable_progress_bar = false;
+
   -- create parquet file from loop json files
   ATTACH ':memory:' AS in_memory;
   COPY (
@@ -20,8 +15,8 @@ ionos.loop-duckdb.exec_duckdb "
       filename, 
       * EXCLUDE (timestamp),
       to_timestamp(timestamp) AS timestamp -- timestamp was a bigint, convert to timestamp type
-    FROM read_json(
-      ARRAY['$LOOP_JSON_FILES'], 
+    FROM read_json_auto(
+      './s3/**/*.json', 
       filename = true, -- Crucial: Ensures the filename is included as a column
       ignore_errors = true,
       columns = {
@@ -33,10 +28,11 @@ ionos.loop-duckdb.exec_duckdb "
         plugin_data: 'JSON',
         instance: 'VARCHAR',
         timestamp: 'BIGINT',
-      },
-      auto_detect=true
-    )
+      }
+    ) 
+    WHERE
+      version = '1.0'
   )
-  TO './${REPORT_NAME}/${REPORT_NAME}.parquet' (FORMAT PARQUET);
+  TO './${REPORT_NAME}/${REPORT_NAME}.parquet' (FORMAT PARQUET, OVERWRITE TRUE);
 "
 
