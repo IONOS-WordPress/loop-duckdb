@@ -6,4 +6,4 @@
 /duckdb/*.db*
 /report.md
 /generate-report
-
+/s3.zip
