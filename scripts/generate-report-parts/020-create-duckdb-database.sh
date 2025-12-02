@@ -60,7 +60,11 @@ CREATE OR REPLACE TABLE events as
         \"payload\": \"JSON\",
         \"timestamp\": \"BIGINT\"
       }]'
-    )) AS event
+    )) AS event,
+    REPLACE(json_value(
+      loop_items.hosting,
+      '$.tenant'
+    ), '\"', '') AS tenant
   FROM
     loop_items;
 
