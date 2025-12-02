@@ -4,6 +4,8 @@
 # generates markdown output for login related questions of the report
 # 
 
+TITLE="How do Ionos users login ?"
+
 SQL="
   SELECT
     event.payload->'type' AS login_type,
@@ -12,12 +14,11 @@ SQL="
     events
   WHERE 
     event.name = 'login'
+    AND tenant = 'ionos'
   GROUP BY 
     login_type
   ;
 "
-
-TITLE="How do users login ?"
 
 cat <<EOF
 
