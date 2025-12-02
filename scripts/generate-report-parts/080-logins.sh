@@ -7,14 +7,22 @@
 TITLE="How do Ionos users login ?"
 
 SQL="
+  WITH unique_instance_data AS (
   SELECT
-    event.payload->'type' AS login_type,
+    filename,
+    (hosting->>'tenant') AS tenant
+  FROM loop_items
+)
+  SELECT
+    event.payload->>'type' AS login_type,
     COUNT(*) AS total_logins
   FROM 
-    events
+    events,
+    unique_instance_data
   WHERE 
     event.name = 'login'
     AND tenant = 'ionos'
+    AND unique_instance_data.filename = events.filename
   GROUP BY 
     login_type
   ;
