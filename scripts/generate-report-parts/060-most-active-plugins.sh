@@ -17,7 +17,10 @@ WITH
   plugin_counts AS (
     -- Calculate the occurrence count for each plugin
     SELECT
-      plugin_slug AS slug,
+      CASE
+        WHEN plugin_slug LIKE '01-ext%' THEN 'Extendify License'
+        ELSE plugin_slug
+      END AS slug,
       COUNT(*) AS occurrence_count
     FROM
       _plugins
@@ -25,7 +28,10 @@ WITH
       -- exclude our own plugins
       plugin_slug NOT LIKE 'ionos-%'
     GROUP BY
-      slug
+      CASE
+        WHEN plugin_slug LIKE '01-ext%' THEN 'Extendify License'
+        ELSE plugin_slug
+      END
   ),
   total_count AS (
     -- Calculate the total number of instances from the view
