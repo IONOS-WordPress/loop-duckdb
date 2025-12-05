@@ -2,13 +2,7 @@
   "name": "loop-duckdb",
   "scripts": {
     "download-loop-data-s3": "./scripts/download-loop-data-s3.sh",
-    "upload-duckdb-s3": "./scripts/upload-duckdb-s3.sh",
-    "export-duckdb-notebooks": "./scripts/export-duckdb-notebooks.sh",
-    "import-duckdb-notebooks": "./scripts/import-duckdb-notebooks.sh",
-    "download-duckdb-s3": "./scripts/download-duckdb-s3.sh",
-    "start": "./scripts/start.sh",
     "generate-report": "./scripts/generate-report.sh",
-    "start-report-ui": "./scripts/start-report-ui.sh",
-    "one-shot": "./scripts/one-shot.sh"
+    "start-report-ui": "./scripts/start-report-ui.sh"
   }
 }
