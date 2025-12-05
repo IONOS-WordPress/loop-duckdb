@@ -94,7 +94,7 @@ WITH
   -- query all .htaccess file paths and their usage (ignoring different contents)
   -- SELECT * FROM unique_htaccess_filepaths -- LIMIT 5
 
-  -- query all .htaccess file paths (with the same contents) and their usage (ignoring different contents)
+  -- query all .htaccess file paths (with the same contents) and their usage 
   -- SELECT * FROM unique_htaccess_files -- LIMIT 5
 ;
 ```
