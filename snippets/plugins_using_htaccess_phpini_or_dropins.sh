@@ -89,13 +89,13 @@ tail -n +2 "$CSV_FILE" | while IFS=, read -r slug_path rest; do
   acts_as_dropin="No"
 
   # 1. Check for .htaccess modifications.
-  if grep -r -i -q -E --include='*.php' "\.htaccess['\"]" "$PLUGIN_DIR"; then
+  if grep -r -i -q -E --include='*.php' "\.htaccess" "$PLUGIN_DIR"; then
     writes_htaccess="Yes"
   fi
   echo "  - Writes to .htaccess: $writes_htaccess" | tee -a "$LOG_FILE"
 
   # 2. Check for php.ini modifications.
-  if grep -r -i -q -E --include='*.php' "php\.ini['\"]" "$PLUGIN_DIR"; then
+  if grep -r -i -q -E --include='*.php' "php\.ini" "$PLUGIN_DIR"; then
     writes_phpini="Yes"
   fi
   echo "  - Writes to php.ini: $writes_phpini" | tee -a "$LOG_FILE"
