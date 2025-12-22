@@ -5,6 +5,9 @@
 #
 
 ionos.loop-duckdb.exec_duckdb "
+  -- limit threads to 1 to prevent running in memory limits while importing the json files
+  SET threads = 1;
+
   -- disable progress bar to prevent the progress output from being included in the report
   SET enable_progress_bar = false;
 
