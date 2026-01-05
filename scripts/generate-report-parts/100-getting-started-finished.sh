@@ -11,7 +11,7 @@ SELECT
   COALESCE(
       json_extract_string(
           plugin_data,
-          'ionos-essentials.dashboard.ionos_essentials_nba_setup_completed'
+          '$.ionos-essentials.dashboard.ionos_essentials_nba_setup_completed'
       ),
       'not completed'
   ) AS nba_setup_status,
