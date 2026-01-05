@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "duckdb": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-duckdb",
+        "--db-path",
+        "generate-report/generate-report.db",
+        "--readonly"
+      ]
+    }
+  }
+}
