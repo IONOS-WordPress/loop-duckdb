@@ -73,6 +73,103 @@ EQSQL
 }
 export -f ionos.loop-duckdb.exec_duckdb
 
-cat <<EOF | tee ./${REPORT_NAME}/${REPORT_NAME}.md
-$(run-parts --regex '^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9]+)?$' ./scripts/${REPORT_NAME}-parts)
-EOF
+help() {
+  # print everything in this script file after the '###help-message' marker
+  printf "$(sed -e '1,/^###help-message/d' "$0")\n"
+  exit 0
+}
+
+# wildcard args for the report parts to execute
+POSITIONAL_ARGS=()
+VERBOSE="${VERBOSE:-false}"
+DRY_RUN="${DRY_RUN:-false}"
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --help)
+      help
+      ;;
+    --verbose)
+      VERBOSE=true
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    *)
+      # convert wildcard arguments to regex patterns
+      POSITIONAL_ARGS+=($1)
+      shift
+      ;;
+  esac
+done
+
+verbose() {
+  [[ "$VERBOSE" =~ true|yes ]] && echo -e "\033[1;30m$1\033[0m" >&2 ||:
+}
+
+# create or truncate markdown report file
+: > ./${REPORT_NAME}/${REPORT_NAME}.md
+
+for script in "./scripts/${REPORT_NAME}-parts"/*; do
+  # If no filters provided, process all scripts
+  if [[ ${#POSITIONAL_ARGS[@]} -eq 0 ]]; then
+    verbose "$script (no filter, processing all)"
+  else
+    # Check if the script matches any of the provided filters
+    matched=''
+    for filter in "${POSITIONAL_ARGS[@]}"; do
+      if [[ "$(basename "$script")" == $filter ]]; then
+        verbose "$script (filter matched: $filter)"
+        matched=true
+        break
+      fi
+    done
+
+    if [[ "$matched" == '' ]]; then
+      verbose "skipped $script (no filter matched)"
+      continue
+    fi
+  fi
+
+  # Execute the script if it's executable
+  if [[ -x "$script" ]]; then
+    if [[ "$DRY_RUN" =~ true|yes ]]; then
+      echo "Dry run: $script"
+    else
+      $script | tee -a ./${REPORT_NAME}/${REPORT_NAME}.md
+    fi
+  else
+    verbose "skipped $script (not executable)"
+  fi
+done
+
+exit
+
+###help-message
+
+Usage: generate-report.sh [options] [report-part-wildcards...]
+
+Generates the report by executing the report parts in alphabetical order and compiling them into a markdown file.
+
+Options:
+  --verbose           Enable verbose output.
+  --dry-run           Show which scripts would be executed without running them.
+  --help              Show this help message and exit.
+
+Examples:
+  ./generate-report.sh
+    Generates the full report including all parts.
+
+  ./generate-report.sh 030* 050* *nba* 140-security-settings
+    Generates the report including only the parts that match the specified wildcards.
+
+  ./generate-report.sh --verbose
+    Enable verbose output (displaying which files are being processed).
+
+  ./generate-report.sh --dry-run
+    Show which scripts would be executed without running them.
+
+  ./generate-report.sh --help
+    Show this help message and exit.
