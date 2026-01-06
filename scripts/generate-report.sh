@@ -83,6 +83,7 @@ help() {
 POSITIONAL_ARGS=()
 VERBOSE="${VERBOSE:-false}"
 DRY_RUN="${DRY_RUN:-false}"
+PDF="${PDF:-false}"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -95,6 +96,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dry-run)
       DRY_RUN=true
+      shift
+      ;;
+    --pdf)
+      PDF=true
       shift
       ;;
     *)
@@ -110,7 +115,7 @@ verbose() {
 }
 
 # create or truncate markdown report file
-: > ./${REPORT_NAME}/${REPORT_NAME}.md
+# : > ./${REPORT_NAME}/${REPORT_NAME}.md
 
 for script in "./scripts/${REPORT_NAME}-parts"/*; do
   # If no filters provided, process all scripts
@@ -145,7 +150,34 @@ for script in "./scripts/${REPORT_NAME}-parts"/*; do
   fi
 done
 
+# # format the markdown report using prettier
+# if [[ ! "$DRY_RUN" =~ true|yes ]]; then
+#   pnpm exec prettier --write ./${REPORT_NAME}/${REPORT_NAME}.md
+# fi
+
 exit
+
+# generate PDF using dockerized pandoc if --pdf flag is set
+if [[ "$PDF" =~ true|yes ]]; then
+  # Check if the markdown file exists
+  if [[ ! -f "./${REPORT_NAME}/${REPORT_NAME}.md" ]]; then
+    echo "Error: ./${REPORT_NAME}/${REPORT_NAME}.md does not exist. Run report generation first." >&2
+    exit 1
+  fi
+
+  echo docker run \
+    -v "$(pwd)/${REPORT_NAME}:/data/${REPORT_NAME}" \
+    -u "$(id -u):$(id -g)" \
+    -it \
+    jakobkmar/pandoc-all-in-one \
+    --toc \
+    --filter mermaid-filter \
+    --template /data/scripts/eisvogel.latex \
+    -V geometry:margin=1in \
+    -V geometry:landscape
+fi
+
+exit 
 
 ###help-message
 
@@ -164,6 +196,12 @@ Examples:
 
   ./generate-report.sh 030* 050* *nba* 140-security-settings
     Generates the report including only the parts that match the specified wildcards.
+
+  ./generate-report.sh --pdf
+    Generate the report and convert it to PDF format.
+
+  ./generate-report.sh --pdf xxx
+    Generate the report and convert it to PDF format without executing any report parts.
 
   ./generate-report.sh --verbose
     Enable verbose output (displaying which files are being processed).
