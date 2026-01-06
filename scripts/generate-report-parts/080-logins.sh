@@ -5,6 +5,7 @@
 # 
 
 TITLE="How do Ionos users login ?"
+SUBTITLE="Count of logins by type for Ionos customers"
 
 SQL="
   WITH unique_instance_data AS (
@@ -33,7 +34,7 @@ cat <<EOF
 # $TITLE
 
 \`\`\`mermaid
-$(echo $(ionos.loop-duckdb.exec_duckdb "$SQL;" '-json') | jq -r --arg title "$TITLE" '
+$(echo $(ionos.loop-duckdb.exec_duckdb "$SQL;" '-json') | jq -r --arg title "$SUBTITLE" '
     "pie showData title \($title)" ,
     (.[] | "  \"\(.login_type)\" : \(.total_logins)")
 ')
