@@ -115,7 +115,7 @@ verbose() {
 }
 
 # create or truncate markdown report file
-# : > ./${REPORT_NAME}/${REPORT_NAME}.md
+: > ./${REPORT_NAME}/${REPORT_NAME}.md
 
 for script in "./scripts/${REPORT_NAME}-parts"/*; do
   # If no filters provided, process all scripts
@@ -150,12 +150,10 @@ for script in "./scripts/${REPORT_NAME}-parts"/*; do
   fi
 done
 
-# # format the markdown report using prettier
-# if [[ ! "$DRY_RUN" =~ true|yes ]]; then
-#   pnpm exec prettier --write ./${REPORT_NAME}/${REPORT_NAME}.md
-# fi
-
-exit
+# format the markdown report using prettier
+if [[ ! "$DRY_RUN" =~ true|yes ]]; then
+  pnpm exec prettier --write ./${REPORT_NAME}/${REPORT_NAME}.md
+fi
 
 # generate PDF using dockerized pandoc if --pdf flag is set
 if [[ "$PDF" =~ true|yes ]]; then
@@ -165,16 +163,7 @@ if [[ "$PDF" =~ true|yes ]]; then
     exit 1
   fi
 
-  echo docker run \
-    -v "$(pwd)/${REPORT_NAME}:/data/${REPORT_NAME}" \
-    -u "$(id -u):$(id -g)" \
-    -it \
-    jakobkmar/pandoc-all-in-one \
-    --toc \
-    --filter mermaid-filter \
-    --template /data/scripts/eisvogel.latex \
-    -V geometry:margin=1in \
-    -V geometry:landscape
+  pnpm exec node scripts/report-2-pdf.js ./${REPORT_NAME}/${REPORT_NAME}.md
 fi
 
 exit 

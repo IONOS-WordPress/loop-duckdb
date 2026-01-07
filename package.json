@@ -1,12 +1,15 @@
 {
   "name": "loop-duckdb",
+  "type": "module",
   "scripts": {
     "download-loop-data-s3": "./scripts/download-loop-data-s3.sh",
-    "generate-report": "./scripts/generate-report.sh",
+    "generate-report": "./scripts/generate-report.sh --verbose --pdf",
     "start-report-ui": "./scripts/start-report-ui.sh",
     "detect-plugins-using-htaccess-phpini-or-dropins" : "./snippets/plugins_using_htaccess_phpini_or_dropins.sh snippets/500-most-active-plugins.csv"
   },
   "dependencies": {
-    "prettier": "^3.7.4"
+    "prettier": "^3.7.4",
+    "md-to-pdf": "^5.2.5",
+    "mermaid": "^11.12.2"
   }
 }
