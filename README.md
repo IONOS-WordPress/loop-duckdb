@@ -8,9 +8,13 @@ Provides tooling to explore and analyze `ionos-loop` data using DuckDB.
 
 - `docker`
 
+- `pnpm`
+
 Duckdb will be started using docker so you dont need to have duckdb installed on your machine.
 
 # Setup
+
+- `pnpm install`
 
 - Create a `.secrets` file and configure the AWS credentials (see the `*.example` file templates).
 
