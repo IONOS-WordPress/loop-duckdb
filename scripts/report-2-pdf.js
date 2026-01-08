@@ -66,6 +66,7 @@ const settings = {
     landscape: true,
     //printBackground: true,
     displayHeaderFooter: true,
+    outline: true,
     headerTemplate: `<span style="font-size: 10px; margin-left: 20px;">IONOS Loop Usage Report (${timePeriod}) - WordPress Hosting Team</span>`,
     footerTemplate:
       '<div style="font-size: 10px; margin: 0 auto;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>',

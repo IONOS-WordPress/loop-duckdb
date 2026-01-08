@@ -153,16 +153,6 @@ done
 # format the markdown report using prettier
 if [[ ! "$DRY_RUN" =~ true|yes ]]; then
   pnpm exec prettier --write ./${REPORT_NAME}/${REPORT_NAME}.md
-fi
-
-# generate PDF using dockerized pandoc if --pdf flag is set
-if [[ "$PDF" =~ true|yes ]]; then
-  # Check if the markdown file exists
-  if [[ ! -f "./${REPORT_NAME}/${REPORT_NAME}.md" ]]; then
-    echo "Error: ./${REPORT_NAME}/${REPORT_NAME}.md does not exist. Run report generation first." >&2
-    exit 1
-  fi
-
   pnpm exec node scripts/report-2-pdf.js ./${REPORT_NAME}/${REPORT_NAME}.md
 fi
 
