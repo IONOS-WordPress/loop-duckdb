@@ -5,7 +5,7 @@
 # 
 
 TITLE="How do Ionos users login ?"
-SUBTITLE="Count of logins by type for Ionos customers"
+SUBTITLE="Count of logins by type"
 
 SQL="
   WITH unique_instance_data AS (

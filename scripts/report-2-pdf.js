@@ -63,7 +63,7 @@ const settings = {
   pdf_options: {
     format: "A4",
     margin: { top: "20mm", right: "20mm", bottom: "20mm", left: "20mm" },
-    landscape: true,
+    // landscape: true,
     //printBackground: true,
     displayHeaderFooter: true,
     headerTemplate: `<span style="font-size: 10px; margin-left: 20px;">IONOS Loop Usage Report (${timePeriod}) - WordPress Hosting Team</span>`,
