@@ -226,11 +226,11 @@ I want to create a new report insight. The insight should show the distribution 
 ```
 
 ```
-Create a new insight that counts how many instances have auto-updates enabled for plugins. Show the results in a markdown table.
+Create a new report insight that counts how many instances have auto-updates enabled for plugins. Show the results in a markdown table.
 ```
 
 ```
-Add a report section that analyzes the PHP versions in use, showing both count and percentage. Include both a table and a pie chart.
+Add a report isnight that analyzes the PHP versions in use, showing both count and percentage. Include both a table and a pie chart.
 ```
 
 #### Feature Adoption Analysis
@@ -240,7 +240,7 @@ I want to create a new report insight. The insight should output how many unique
 ```
 
 ```
-Create an insight showing the adoption rate of security features (XMLRPC, PEL, credentials checking, mail notify). Show each feature as a percentage.
+Create an report insight showing the adoption rate of security features (XMLRPC, PEL, credentials checking, mail notify). Show each feature as a percentage.
 ```
 
 ```
@@ -254,17 +254,17 @@ Create a report insight analyzing user login patterns over the last 30 days. Sho
 ```
 
 ```
-Add an insight that tracks the most common events in the last 7 days. Show the top 10 events by frequency.
+Add an report insight that tracks the most common events in the last 7 days. Show the top 10 events by frequency.
 ```
 
 ```
-I want to see which instances had login failures in the last month. Create an insight with the count and a list of affected instances.
+I want to see which instances had login failures in the last month. Create an report insight with the count and a list of affected instances.
 ```
 
 #### Comparative Analysis
 
 ```
-Create an insight comparing WordPress versions to PHP versions. Show which WordPress versions are running on which PHP versions.
+Create an report insight comparing WordPress versions to PHP versions. Show which WordPress versions are running on which PHP versions.
 ```
 
 ```
@@ -272,17 +272,17 @@ Add a report insight that shows the correlation between theme choice and plugin 
 ```
 
 ```
-Analyze the relationship between instance age (based on first loop timestamp) and feature adoption rates.
+Analyze the relationship between instance age (based on first loop timestamp) and feature adoption rates and persit it as an report insight.
 ```
 
 #### Time-Series Analysis
 
 ```
-Create an insight showing how plugin installation trends have changed over the last 3 months. Which plugins are growing fastest?
+Create an report insight showing how plugin installation trends have changed over the last 3 months. Which plugins are growing fastest?
 ```
 
 ```
-Add a report showing user engagement trends - how many unique logins per week over the last 2 months?
+Add a report insight showing user engagement trends - how many unique logins per week over the last 2 months?
 ```
 
 #### Placement and Customization
@@ -290,15 +290,15 @@ Add a report showing user engagement trends - how many unique logins per week ov
 When creating insights, you can specify:
 
 ```
-Create an insight about [topic]. It should appear after the WordPress versions section (so around 045-*). Use a table and pie chart.
+Create an report insight about [topic]. It should appear after the WordPress versions section (so around 045-*). Use a table and pie chart.
 ```
 
 ```
-Add a new insight as the last section in the report (900-*) that summarizes the key findings. Just use markdown text, no charts.
+Add a new report insight as the last section in the report (900-*) that summarizes the key findings. Just use markdown text, no charts.
 ```
 
 ```
-Create an insight about [topic] and place it in the plugin analysis section (after 060-*). Use a mermaid bar chart instead of a pie chart.
+Create an report insight about [topic] and place it in the plugin analysis section (after 060-*). Use a mermaid bar chart instead of a pie chart.
 ```
 
 ## Database Schema
