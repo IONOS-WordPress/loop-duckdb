@@ -5,7 +5,8 @@
     "download-loop-data-s3": "./scripts/download-loop-data-s3.sh",
     "generate-report": "./scripts/generate-report.sh",
     "start-report-ui": "./scripts/start-report-ui.sh",
-    "detect-plugins-using-htaccess-phpini-or-dropins" : "./snippets/plugins_using_htaccess_phpini_or_dropins.sh snippets/500-most-active-plugins.csv"
+    "detect-plugins-using-htaccess-phpini-or-dropins" : "./snippets/plugins_using_htaccess_phpini_or_dropins.sh snippets/500-most-active-plugins.csv",
+    "prepare" : "./scripts/_prepare.sh"
   },
   "dependencies": {
     "prettier": "^3.7.4",
