@@ -287,13 +287,14 @@ When refactoring an insight, follow this workflow:
 # TECHNOLOGY: bash + jq + DuckDB SQL only (NO Python)
 #
 
-readonly SQL="
+SQL=$(cat <<EOF
 -- Consult https://duckdb.org/docs/sql/introduction for SQL syntax
 -- Always join with recent_loops for current state
 SELECT ...
 FROM loop_items
 JOIN recent_loops ON loop_items.filename = recent_loops.filename
-"
+EOF
+)
 
 readonly TITLE="Your Insight Title"
 
@@ -316,11 +317,12 @@ EOF
 # TECHNOLOGY: bash + jq + DuckDB SQL only (NO Python)
 #
 
-readonly SQL="
+SQL=$(cat <<EOF
 SELECT category, count
 FROM ...
 ORDER BY count DESC
-"
+EOF
+)
 
 readonly TITLE="Your Insight Title"
 
@@ -344,6 +346,7 @@ EOF
 ```
 
 **Key points:**
+- **SQL formatting**: Use `SQL=$(cat <<EOF ... EOF)` heredoc pattern for all SQL queries
 - Use bash heredocs (`cat <<EOF`) for multi-line output
 - Use jq for JSON transformation (e.g., DuckDB JSON output → Mermaid syntax)
 - Never use Python scripts or modules
@@ -364,7 +367,34 @@ EOF
 - ❌ `.py` files
 - ❌ Any other programming languages
 
-### 1. Always Join with recent_loops
+### 1. SQL Formatting with Heredoc
+
+**CRITICAL**: All SQL queries MUST be defined using the heredoc pattern:
+
+```bash
+SQL=$(cat <<EOF
+-- Your SQL query here
+SELECT ...
+FROM ...
+EOF
+)
+```
+
+**DO NOT use**:
+```bash
+# ❌ Wrong - simple string assignment
+readonly SQL="
+SELECT ...
+"
+```
+
+**Why heredoc?**
+- Consistent formatting across all insight scripts
+- Proper handling of special characters and quotes
+- Better readability for multi-line SQL queries
+- Easier to copy/paste SQL into DuckDB UI for testing
+
+### 2. Always Join with recent_loops
 
 **CRITICAL**: Every query analyzing current state MUST join with `recent_loops`:
 
