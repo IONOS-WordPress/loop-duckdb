@@ -745,20 +745,26 @@ echo '[{"key":"value"}]' | jq -r '(.[] | "\(.key)")'
 # Make script executable
 chmod +x scripts/generate-report-parts/NNN-name.sh
 
-# Test single script
+# Test single script (markdown only, no verbose output)
 pnpm generate-report 'NNN-name.sh'
 
-# Test with verbose output
+# Test with verbose output (shows which files are being processed)
 pnpm generate-report --verbose 'NNN-name.sh'
 
-# Dry run (see what would execute)
+# Dry run (see what would execute without running)
 pnpm generate-report --dry-run 'NNN*'
+
+# Generate with PDF output
+pnpm generate-report --pdf 'NNN-name.sh'
 
 # Open DuckDB UI for query development
 pnpm start-report-ui
 
-# Generate full report
+# Generate full report (markdown only)
 pnpm generate-report
+
+# Generate full report with PDF
+pnpm generate-report --pdf
 
 # Generate specific sections
 pnpm generate-report '040*' '050*' '060*'

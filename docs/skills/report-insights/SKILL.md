@@ -46,16 +46,102 @@ Use this skill when you need to:
 
 ## Agent Workflow Instructions
 
+### ⚠️ MANDATORY: Interactive User Communication
+
+**YOU MUST use the AskUserQuestion tool for ALL user interactions during execution.**
+
+**DO NOT:**
+- ❌ Ask questions in your text responses and wait for the user to reply
+- ❌ Say "please confirm..." or "let me know..." without using the tool
+- ❌ Make assumptions when requirements are unclear
+- ❌ Skip user approval steps
+
+**DO:**
+- ✅ Use AskUserQuestion immediately when you need clarification
+- ✅ Present clear options with descriptions for user to choose from
+- ✅ Get explicit approval before implementing changes
+- ✅ Ask follow-up questions using the tool if the answer raises new questions
+
+### Using the AskUserQuestion Tool
+
+**CRITICAL: Use the AskUserQuestion tool whenever you need user input, clarification, or approval.**
+
+The AskUserQuestion tool is your primary mechanism for interacting with the user during execution. You MUST use it instead of waiting for the user to respond in chat.
+
+**When to use AskUserQuestion:**
+- Requirements are ambiguous or underspecified
+- Multiple approaches are possible and you need the user to choose
+- You need approval before implementing changes
+- You need specific details (e.g., placement, naming, format preferences)
+- You want confirmation that your plan meets user expectations
+
+**Example usage scenarios:**
+
+**Scenario 1: Clarifying placement**
+```
+AskUserQuestion:
+  questions:
+    - question: "Where should this insight appear in the report?"
+      header: "Placement"
+      multiSelect: false
+      options:
+        - label: "After WordPress Versions (045-xyz.sh)"
+          description: "Places the insight in the WordPress analysis section"
+        - label: "After Plugin Analysis (125-xyz.sh)"
+          description: "Groups it with plugin-related insights"
+        - label: "At the end (900-xyz.sh)"
+          description: "Adds it as a final summary section"
+```
+
+**Scenario 2: Choosing visualization format**
+```
+AskUserQuestion:
+  questions:
+    - question: "What visualization format should be used?"
+      header: "Format"
+      multiSelect: false
+      options:
+        - label: "Markdown table only"
+          description: "Simple table format, best for detailed data"
+        - label: "Pie chart only"
+          description: "Visual chart, best for proportional data (max 10 items)"
+        - label: "Both table and chart"
+          description: "Comprehensive view with table and chart"
+```
+
+**Scenario 3: Getting plan approval**
+```
+AskUserQuestion:
+  questions:
+    - question: "Which implementation approach should I use?"
+      header: "Approach"
+      multiSelect: false
+      options:
+        - label: "Simple aggregation (Recommended)"
+          description: "Fast query, groups by category and counts"
+        - label: "Window functions"
+          description: "More complex, allows ranking and percentile calculations"
+        - label: "CTE-based analysis"
+          description: "Multi-step analysis, easier to debug but slightly slower"
+```
+
+**Best practices:**
+- Keep header text short (max 12 characters)
+- Provide 2-4 clear options with meaningful descriptions
+- Mark recommended options with "(Recommended)" in the label
+- Use multiSelect: true when options are not mutually exclusive
+- Never skip using this tool - waiting for chat responses breaks the workflow
+
 ### Clarifying Ambiguous Requests
 
-**ALWAYS ask the user for clarification when requirements are not clearly defined.**
+**ALWAYS use the AskUserQuestion tool when requirements are not clearly defined.**
 
 **Example - Adding a New Insight:**
 - **User request**: "Add a new insight about xyz"
-- **Required clarifications**:
-  - Where should this insight appear in the report? (after/before which existing insight?)
-  - What specific aspect of "xyz" should be analyzed?
-  - What visualization format is preferred (table, chart, both)?
+- **Required clarifications** (use AskUserQuestion for each):
+  1. Where should this insight appear in the report? (after/before which existing insight?)
+  2. What specific aspect of "xyz" should be analyzed?
+  3. What visualization format is preferred (table, chart, both)?
 - **Derive insight filename**: Based on user's response, determine the appropriate `NNN` number for the script name (e.g., if it should appear after `040-wordpress_versions.sh`, suggest `045-xyz-analysis.sh`)
 
 ### Creating a New Insight
@@ -63,9 +149,12 @@ Use this skill when you need to:
 When creating a new insight, follow this workflow:
 
 1. **Understand the requirements**
-   - Ask clarifying questions if anything is ambiguous
-   - Determine the placement in the report (filename number)
-   - Understand the data to be analyzed
+   - **Use AskUserQuestion** to clarify anything ambiguous
+   - Ask about:
+     - Placement in the report (filename number)
+     - Specific data to be analyzed
+     - Visualization preferences (table, chart, both)
+   - **Example**: Use AskUserQuestion with multiSelect: false to present placement options
 
 2. **Create and explain a query plan**
    - Explore the database schema using `mcp__duckdb__query`
@@ -78,7 +167,8 @@ When creating a new insight, follow this workflow:
 
 3. **Get user approval**
    - Present the plan clearly
-   - Ask: "Does this approach meet your requirements?"
+   - **Use AskUserQuestion** to ask: "Does this approach meet your requirements?"
+   - **Example**: Present 2-3 approach options with descriptions of trade-offs
    - Wait for confirmation before proceeding
 
 4. **Implement the insight**
@@ -91,7 +181,11 @@ When creating a new insight, follow this workflow:
 When refactoring an insight, follow this workflow:
 
 1. **Understand the change request**
-   - Ask clarifying questions about what needs to be changed and why
+   - **Use AskUserQuestion** to clarify what needs to be changed and why
+   - Ask about:
+     - Specific problems with current implementation
+     - Desired outcomes and goals
+     - Any constraints or preferences
 
 2. **Analyze the current implementation**
    - Read the existing script
@@ -110,7 +204,8 @@ When refactoring an insight, follow this workflow:
 
 4. **Get user approval**
    - Present the refactoring plan
-   - Ask: "Does this refactoring plan align with your goals?"
+   - **Use AskUserQuestion** to ask: "Does this refactoring plan align with your goals?"
+   - **Example**: Present 2-4 refactoring approach options with trade-offs
    - Wait for confirmation before making changes
 
 5. **Implement the refactoring**
@@ -263,14 +358,17 @@ $(echo $(ionos.loop-duckdb.exec_duckdb "$SQL LIMIT 10;" '-json') | jq -r --arg t
 # Develop queries interactively
 pnpm start-report-ui
 
-# Test single script
+# Test single script (no verbose output by default)
 pnpm generate-report 'NNN-name.sh'
 
-# Verbose output
+# Verbose output (shows which files are being processed)
 pnpm generate-report --verbose 'NNN-name.sh'
 
-# Dry run
+# Dry run (see what would execute without running)
 pnpm generate-report --dry-run 'NNN-name.sh'
+
+# Generate with PDF output
+pnpm generate-report --pdf 'NNN-name.sh'
 ```
 
 ## Common Patterns

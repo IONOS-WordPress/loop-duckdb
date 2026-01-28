@@ -87,9 +87,9 @@ pnpm download-loop-data-s3
 
 ## `pnpm generate-report`
 
-**Purpose**: Generates the complete report with database, markdown, and PDF output
+**Purpose**: Generates the report with database and markdown output (PDF optional)
 
-**Script**: `./scripts/generate-report.sh --verbose --pdf`
+**Script**: `./scripts/generate-report.sh`
 
 **Prerequisites**:
 - Loop data must exist in `./s3` directory (run `pnpm download-loop-data-s3` first)
@@ -104,32 +104,44 @@ pnpm download-loop-data-s3
 6. Executes all report parts in `./scripts/generate-report-parts/` (alphabetical order)
 7. Generates markdown report (`generate-report.md`)
 8. Formats markdown with Prettier
-9. Converts to PDF format (`generate-report.pdf`)
+9. (Optional) Converts to PDF format (`generate-report.pdf`) if `--pdf` flag is used
 
 **Dependencies**: Requires data from `pnpm download-loop-data-s3`
 
-**Output**: 4 files in `./generate-report/` directory:
+**Output**: 3-4 files in `./generate-report/` directory:
 - `generate-report.parquet` - Parquet file with all loop data
 - `generate-report.db` - DuckDB database
 - `generate-report.md` - Markdown report with mermaid charts
-- `generate-report.pdf` - PDF version of the report
+- `generate-report.pdf` - PDF version of the report (only with `--pdf` flag)
 
 **Command-line options**:
-- `--verbose` - Enable verbose output (enabled by default)
+- `--verbose` - Enable verbose output showing which files are being processed (disabled by default)
 - `--dry-run` - Show which scripts would run without executing them
-- `--pdf` - Generate PDF output (enabled by default)
+- `--pdf` - Generate PDF output in addition to markdown (disabled by default)
 - `--help` - Show help message with usage examples
 
 **Examples**:
 ```bash
-# Generate full report (default behavior)
+# Generate report (markdown only, no verbose output)
 pnpm generate-report
 
-# Generate report with custom options
+# Generate report with PDF output
+pnpm generate-report --pdf
+
+# Generate report with verbose output
+pnpm generate-report --verbose
+
+# Generate report with both PDF and verbose output
+pnpm generate-report --verbose --pdf
+
+# Dry run to see which scripts would execute
 pnpm generate-report --dry-run
 
 # Generate only specific report parts (see Advanced Usage section)
 pnpm generate-report '050*' '060*'
+
+# Generate specific parts with PDF output
+pnpm generate-report --pdf '050*' '060*'
 ```
 
 ---
@@ -316,14 +328,20 @@ The output of all scripts will be collected together into `./generate-report/gen
 To test only your specific report part during development:
 
 ```bash
-# Test with verbose and dry-run to see what would execute
+# Test with dry-run to see what would execute (without verbose output)
+pnpm generate-report --dry-run '055-my-new-insight.sh'
+
+# Test with verbose and dry-run to see detailed execution info
 pnpm generate-report --verbose --dry-run '055-my-new-insight.sh'
 
 # Run only your report part
 pnpm generate-report '055-my-new-insight.sh'
 
-# Run your report part with verbose output
+# Run your report part with verbose output to see processing details
 pnpm generate-report --verbose '055-my-new-insight.sh'
+
+# Run your report part and generate PDF
+pnpm generate-report --pdf '055-my-new-insight.sh'
 ```
 
 ### How to Run Only Specific Report Parts
@@ -355,7 +373,14 @@ This will execute only:
 
 You can combine options with filters:
 ```bash
+# Dry run with verbose output
 ./scripts/generate-report.sh --verbose --dry-run '200*'
+
+# Generate with PDF output
+./scripts/generate-report.sh --pdf '200*'
+
+# All options together
+./scripts/generate-report.sh --verbose --pdf '200*'
 ```
 
 ### How to Skip a Single Report Part
@@ -364,7 +389,10 @@ You can combine options with filters:
 
 Run only the parts you want by specifying them explicitly. For example, to skip `050-php_versions.sh`, run all other parts:
 ```bash
-# First, check what would run
+# First, check what would run (use --verbose to see detailed list)
+pnpm generate-report --dry-run
+
+# With verbose output to see which scripts match
 pnpm generate-report --verbose --dry-run
 
 # Run everything except 050* by listing all the parts you want
@@ -698,7 +726,14 @@ This section explains the purpose of each top-level directory in the project.
 **Solution**:
 1. Ensure Docker is running
 2. Check that `./s3` directory contains JSON files
-3. Run with `--verbose` flag for detailed output: `pnpm generate-report --verbose`
+3. Run with `--verbose` flag for detailed output to see which scripts are executing:
+   ```bash
+   pnpm generate-report --verbose
+   ```
+4. Use `--dry-run` to see what would execute without running:
+   ```bash
+   pnpm generate-report --dry-run
+   ```
 
 ## DuckDB UI won't start
 

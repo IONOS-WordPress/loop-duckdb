@@ -32,13 +32,21 @@ The DuckDB database is at: `generate-report/generate-report.db`
 
 **CRITICAL**: Before querying, ensure the database exists:
 ```bash
+# Generate database and markdown report
 pnpm generate-report
+
+# Add --pdf flag to also generate PDF output
+pnpm generate-report --pdf
+
+# Add --verbose flag to see which files are being processed
+pnpm generate-report --verbose
 ```
 
 If the database doesn't exist, run the command above. It will:
 1. Download Loop data from S3 (if needed)
 2. Create the database with all tables and views
-3. Generate reports in `./generate-report/`
+3. Generate markdown report in `./generate-report/`
+4. (Optional with --pdf) Generate PDF report
 
 ## Query the Database
 
@@ -225,7 +233,17 @@ $(ionos.loop-duckdb.exec_duckdb "$SQL" '-markdown')
 EOF
 ```
 
-4. **Test it**: `pnpm generate-report '055-my-insight.sh'`
+4. **Test it**:
+   ```bash
+   # Test the script (markdown output only)
+   pnpm generate-report '055-my-insight.sh'
+
+   # Test with verbose output
+   pnpm generate-report --verbose '055-my-insight.sh'
+
+   # Test and generate PDF
+   pnpm generate-report --pdf '055-my-insight.sh'
+   ```
 
 The `ionos.loop-duckdb.exec_duckdb` function is available in report scripts:
 - First param: SQL query
