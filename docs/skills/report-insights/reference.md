@@ -4,6 +4,19 @@ Comprehensive reference for creating and maintaining report insight scripts in t
 
 **IMPORTANT**: Patterns in this reference are examples only. Always consult the [official DuckDB documentation](https://duckdb.org/docs/sql/introduction) as your primary reference for SQL syntax.
 
+## ⚠️ MANDATORY: Technology Stack
+
+**ALL insight scripts MUST use:**
+- ✅ **Bash** - Shell scripting
+- ✅ **jq** - JSON processing
+- ✅ **DuckDB SQL** - Database queries
+
+**FORBIDDEN:**
+- ❌ **NO Python** - No Python scripts, modules, or imports
+- ❌ **NO other languages** - Bash and jq only
+
+This ensures minimal dependencies and consistent tooling.
+
 ## Table of Contents
 
 1. [External Documentation References](#external-documentation-references)
@@ -575,6 +588,75 @@ categorized AS (
 
 ## Bash Techniques
 
+**CRITICAL**: All scripts MUST use bash and jq only. NO Python allowed.
+
+### Why Bash + jq (Not Python)?
+
+**Project requirements mandate bash and jq for all insights:**
+- ✅ Minimal dependencies (bash and jq are always available)
+- ✅ Consistent tooling across all scripts
+- ✅ Fast execution for simple transformations
+- ✅ Easy to understand and maintain
+- ❌ NO Python scripts, modules, or libraries
+
+**For JSON processing**, always use jq:
+```bash
+# Convert JSON to Mermaid chart
+echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-json') | jq -r '
+  "pie showData",
+  (.[] | "  \"\(.category)\" : \(.count)")
+'
+
+# Extract specific fields
+echo "$JSON_DATA" | jq -r '.[] | "\(.name): \(.value)"'
+
+# Filter and transform
+echo "$JSON_DATA" | jq -r '.[] | select(.count > 10) | .name'
+```
+
+### jq Patterns (Python Replacement)
+
+**Use jq instead of Python for all JSON processing:**
+
+```bash
+# Extract field from JSON array
+echo "$JSON" | jq -r '.[] | .field'
+
+# Filter items
+echo "$JSON" | jq -r '.[] | select(.count > 10) | .name'
+
+# Transform to key-value
+echo "$JSON" | jq -r '.[] | "\(.key): \(.value)"'
+
+# Convert object to array of key-value pairs
+echo "$JSON" | jq -r 'to_entries[] | "\(.key): \(.value)"'
+
+# Format as Mermaid chart
+echo "$JSON" | jq -r --arg title "Title" '
+  "pie showData title \($title)",
+  (.[] | "  \"\(.category)\" : \(.count)")
+'
+
+# Conditional formatting
+echo "$JSON" | jq -r '.[] |
+  if .percentage > 50 then
+    "\(.name) (HIGH): \(.percentage)%"
+  else
+    "\(.name): \(.percentage)%"
+  end'
+
+# Aggregate and group (use DuckDB SQL instead for complex aggregations)
+echo "$JSON" | jq -r 'group_by(.category) |
+  map({category: .[0].category, total: map(.count) | add})'
+```
+
+**Common transformations:**
+- **Python `json.loads()`** → **bash** `echo "$VAR" | jq '.'`
+- **Python list comprehension** → **jq** `.[] | ...`
+- **Python `filter()`** → **jq** `select(...)`
+- **Python `map()`** → **jq** `map(...)`
+- **Python string formatting** → **jq** `"\(.field)"`
+
 ### Heredoc with Variables
 
 ```bash
@@ -683,6 +765,14 @@ echo '[{"key":"value"}]' | jq -r '(.[] | "\(.key)")'
 ---
 
 ## Best Practices Summary
+
+### Technology Stack (MANDATORY)
+
+**⚠️ CRITICAL: Use ONLY bash and jq**
+1. **All scripts MUST be bash** - No Python, no other languages
+2. **Use jq for JSON processing** - Never use Python json module
+3. **All data transformation via DuckDB SQL or jq** - No pandas, numpy, etc.
+4. **If you think you need Python, use jq instead** - jq can handle complex JSON transformations
 
 ### Documentation Priority
 

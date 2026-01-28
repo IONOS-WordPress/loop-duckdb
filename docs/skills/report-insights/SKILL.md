@@ -9,12 +9,40 @@ metadata:
   output-formats: markdown, mermaid-charts
   version: "1.0"
   prerequisites: Database must exist (run pnpm generate-report first)
+  allowed-languages: bash, jq only - NO Python
 allowed-tools: mcp__duckdb__query Read Write Edit Bash
 ---
 
 # Report Insights Skill
 
 Use this skill when creating or refactoring report insight scripts that analyze WordPress instance data and generate markdown reports with visualizations.
+
+## ⚠️ CRITICAL: Technology Stack Requirements
+
+**MANDATORY TECHNOLOGY RESTRICTIONS:**
+
+**✅ ALLOWED:**
+- **Bash** - Shell scripting for report generation
+- **jq** - JSON processing and transformation
+- **DuckDB SQL** - Database queries via `ionos.loop-duckdb.exec_duckdb`
+- **Mermaid** - Chart syntax for visualizations
+
+**❌ FORBIDDEN:**
+- **NO Python** - Do not use Python scripts, modules, or libraries
+- **NO Python imports** - No `import`, `pip`, `python`, or `.py` files
+- **NO other programming languages** - Stick to bash and jq only
+
+**When generating insights:**
+- Use bash for orchestration and output formatting
+- Use jq for JSON processing and transformation
+- Use DuckDB SQL for data queries
+- Use Mermaid syntax (generated via jq) for charts
+
+**Why this restriction?**
+- Ensures minimal dependencies
+- Maintains consistent tooling across all insights
+- Simplifies deployment and execution
+- All required tools (bash, jq, DuckDB) are already available
 
 ## IMPORTANT: Documentation Priority
 
@@ -243,11 +271,15 @@ When refactoring an insight, follow this workflow:
 
 ## Script Template
 
+**IMPORTANT**: Only use bash and jq. NO Python allowed.
+
 ```bash
 #!/usr/bin/env bash
 
 #
 # Description of what this insight analyzes
+#
+# TECHNOLOGY: bash + jq + DuckDB SQL only (NO Python)
 #
 
 readonly SQL="
@@ -268,7 +300,64 @@ $(ionos.loop-duckdb.exec_duckdb "$SQL" '-markdown')
 EOF
 ```
 
+**Template with Mermaid Chart (using jq for JSON processing):**
+
+```bash
+#!/usr/bin/env bash
+
+#
+# Description of what this insight analyzes
+#
+# TECHNOLOGY: bash + jq + DuckDB SQL only (NO Python)
+#
+
+readonly SQL="
+SELECT category, count
+FROM ...
+ORDER BY count DESC
+"
+
+readonly TITLE="Your Insight Title"
+
+cat <<EOF
+
+# $TITLE
+
+## Data Table
+
+$(ionos.loop-duckdb.exec_duckdb "$SQL" '-markdown')
+
+## Visualization
+
+\`\`\`mermaid
+$(echo $(ionos.loop-duckdb.exec_duckdb "$SQL LIMIT 10;" '-json') | jq -r --arg title "$TITLE" '
+    "pie showData title \($title)" ,
+    (.[] | "  \"\(.category)\" : \(.count)")
+')
+\`\`\`
+EOF
+```
+
+**Key points:**
+- Use bash heredocs (`cat <<EOF`) for multi-line output
+- Use jq for JSON transformation (e.g., DuckDB JSON output → Mermaid syntax)
+- Never use Python scripts or modules
+- All data processing is done via DuckDB SQL
+
 ## Essential Requirements
+
+### 0. Use Only Bash and jq (NO Python)
+
+**MANDATORY**: All insight scripts MUST use only:
+- **Bash** for scripting
+- **jq** for JSON processing
+- **DuckDB SQL** for queries
+
+**FORBIDDEN**:
+- ❌ Python scripts or modules
+- ❌ `import` statements
+- ❌ `.py` files
+- ❌ Any other programming languages
 
 ### 1. Always Join with recent_loops
 
@@ -390,6 +479,8 @@ For query patterns, see:
 | Percentage doesn't sum to 100% | Check for NULL values, use `DISTINCT` correctly |
 | Can't find `ionos.loop-duckdb.exec_duckdb` | Function only available in generate-report.sh context |
 | SQL syntax error | Consult [official DuckDB SQL docs](https://duckdb.org/docs/sql/introduction) |
+| Need complex data transformation | Use jq for JSON processing - NO Python allowed |
+| Want to use Python | **FORBIDDEN**: Use bash + jq instead. All scripts must be bash-only |
 
 ## Additional Resources
 

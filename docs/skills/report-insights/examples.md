@@ -2,6 +2,15 @@
 
 Complete, working examples of report insight scripts from the loop-duckdb project. All examples are real scripts from `scripts/generate-report-parts/`.
 
+## ⚠️ CRITICAL: Technology Requirements
+
+**ALL examples use ONLY:**
+- ✅ **Bash** for scripting
+- ✅ **jq** for JSON processing
+- ✅ **DuckDB SQL** for queries
+
+**NO Python is used or allowed in any insight script.**
+
 ## IMPORTANT: Documentation Priority
 
 **These examples are templates only. Always prioritize official documentation:**
