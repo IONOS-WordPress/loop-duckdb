@@ -433,6 +433,16 @@ The UI allows you to:
 - Export results in various formats
 - Inspect table schemas and data
 
+## AI Integration
+
+The project provides comprehensive AI integration through MCP servers and skills, enabling AI assistants to query data and create report insights.
+
+**See [docs/ai-integration.md](docs/ai-integration.md) for the complete AI integration guide**, including:
+- Available MCP servers and how to use them
+- Skills for querying data and creating insights
+- Example prompts for common tasks
+- Workflow examples and troubleshooting
+
 ## DuckDB MCP Support
 
 The project includes MCP (Model Context Protocol) server integration for DuckDB, allowing AI assistants to query the report database directly.
@@ -466,10 +476,16 @@ loop-duckdb/
 ├── package.json                       # npm scripts and dependencies
 ├── README.md                          # This file
 ├── docs/
-│   └── skills/duckdb/                # DuckDB skill documentation
-│       ├── SKILL.md                   # Overview and schema
-│       ├── examples.md                # Query examples
-│       └── reference.md               # DuckDB reference
+│   ├── ai-integration.md             # AI integration guide (MCP + skills)
+│   └── skills/                       # AI assistant skills
+│       ├── duckdb/                   # DuckDB skill documentation
+│       │   ├── SKILL.md               # Overview and schema
+│       │   ├── examples.md            # Query examples
+│       │   └── reference.md           # DuckDB reference
+│       └── report-insight/           # Report insight skill documentation
+│           ├── SKILL.md               # Creating insights guide
+│           ├── examples.md            # Working examples
+│           └── reference.md           # Pattern library
 ├── scripts/
 │   ├── download-loop-data-s3.sh      # Downloads JSON data from S3
 │   ├── generate-report.sh             # Main report generation script
@@ -548,10 +564,16 @@ This section explains the purpose of each top-level directory in the project.
 **Purpose**: Project documentation and AI assistant skills
 
 **Contents**:
-- `skills/duckdb/` - DuckDB skill documentation for AI assistants
-  - `SKILL.md` - Overview and database schema
-  - `examples.md` - Query examples from the project
-  - `reference.md` - DuckDB SQL reference
+- `ai-integration.md` - Comprehensive AI integration guide (MCP servers + skills)
+- `skills/` - AI assistant skills for querying and creating insights
+  - `duckdb/` - DuckDB skill documentation for AI assistants
+    - `SKILL.md` - Overview and database schema
+    - `examples.md` - Query examples from the project
+    - `reference.md` - DuckDB SQL reference
+  - `report-insight/` - Report insight skill for creating analytics
+    - `SKILL.md` - Comprehensive guide for creating insights
+    - `examples.md` - Working examples from the project
+    - `reference.md` - Pattern library and techniques
 
 **When to modify**: When adding new documentation or AI skills
 
