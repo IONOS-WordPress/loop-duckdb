@@ -1,5 +1,5 @@
 ---
-name: report-insights
+name: report-insight
 description: Create and refactor report insights for analyzing WordPress instance data. Use when adding new analytics sections to the report, modifying existing insights, or creating data visualizations with DuckDB queries and Mermaid charts. Provides templates and best practices for report generation scripts.
 compatibility: Requires bash, DuckDB database at generate-report/generate-report.db, jq for JSON processing, and the ionos.loop-duckdb.exec_duckdb function. Scripts must be executable and follow naming conventions.
 metadata:
