@@ -743,12 +743,16 @@ comment
 **Test SQL in DuckDB UI**:
 ```bash
 pnpm start-report-ui
-# Paste query and test
+# Paste query and test interactively
 ```
 
-**Test script in isolation**:
+**Test insight script in isolation** (outputs markdown):
 ```bash
-pnpm generate-report --verbose '055-my-script.sh'
+# Outputs the generated markdown to stdout
+pnpm generate-report '175-mcp-enabled-last-month.sh'
+
+# With verbose logging
+pnpm generate-report --verbose '175-mcp-enabled-last-month.sh'
 ```
 
 **Check SQL output format**:
@@ -833,30 +837,30 @@ echo '[{"key":"value"}]' | jq -r '(.[] | "\(.key)")'
 
 ```bash
 # Make script executable
-chmod +x scripts/generate-report-parts/NNN-name.sh
+chmod +x scripts/generate-report-parts/175-mcp-enabled-last-month.sh
 
-# Test single script (markdown only, no verbose output)
-pnpm generate-report 'NNN-name.sh'
+# Test single insight - outputs generated markdown to stdout
+pnpm generate-report '175-mcp-enabled-last-month.sh'
 
 # Test with verbose output (shows which files are being processed)
-pnpm generate-report --verbose 'NNN-name.sh'
+pnpm generate-report --verbose '175-mcp-enabled-last-month.sh'
 
 # Dry run (see what would execute without running)
-pnpm generate-report --dry-run 'NNN*'
+pnpm generate-report --dry-run '175-*'
 
 # Generate with PDF output
-pnpm generate-report --pdf 'NNN-name.sh'
+pnpm generate-report --pdf '175-mcp-enabled-last-month.sh'
 
-# Open DuckDB UI for query development
+# Open DuckDB UI for interactive query development
 pnpm start-report-ui
 
-# Generate full report (markdown only)
+# Generate full report (markdown output to stdout)
 pnpm generate-report
 
-# Generate full report with PDF
+# Generate full report with PDF file
 pnpm generate-report --pdf
 
-# Generate specific sections
+# Test multiple specific insights
 pnpm generate-report '040*' '050*' '060*'
 ```
 

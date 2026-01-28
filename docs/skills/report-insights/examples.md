@@ -644,7 +644,7 @@ JOIN recent_loops ...
 
 ## Testing Examples
 
-Test any example:
+Test any example by passing its filename to `generate-report`:
 
 ```bash
 # Copy script to generate-report-parts/
@@ -653,8 +653,11 @@ cp example.sh scripts/generate-report-parts/999-test.sh
 # Make executable
 chmod +x scripts/generate-report-parts/999-test.sh
 
-# Run it
+# Test it - outputs the generated markdown to stdout
 pnpm generate-report '999-test.sh'
+
+# Or test an existing insight directly
+pnpm generate-report '175-mcp-enabled-last-month.sh'
 
 # Clean up
 rm scripts/generate-report-parts/999-test.sh

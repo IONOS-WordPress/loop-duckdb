@@ -200,9 +200,9 @@ When creating a new insight, follow this workflow:
    - Wait for confirmation before proceeding
 
 4. **Implement the insight**
-   - Create the script file with appropriate naming
-   - Make it executable
-   - Test it with `pnpm generate-report 'NNN-name.sh'`
+   - Create the script file with appropriate naming (e.g., `175-mcp-enabled-last-month.sh`)
+   - Make it executable: `chmod +x scripts/generate-report-parts/175-mcp-enabled-last-month.sh`
+   - Test it: `pnpm generate-report '175-mcp-enabled-last-month.sh'` (outputs markdown to stdout)
 
 ### Refactoring an Existing Insight
 
@@ -237,9 +237,10 @@ When refactoring an insight, follow this workflow:
    - Wait for confirmation before making changes
 
 5. **Implement the refactoring**
-   - Make the changes
-   - Test thoroughly
-   - Verify the output meets expectations
+   - Make the changes to the script
+   - Test thoroughly: `pnpm generate-report '175-mcp-enabled-last-month.sh'`
+   - Verify the markdown output meets expectations
+   - Compare before/after output if needed
 
 ## Quick Start Workflow
 
@@ -264,9 +265,13 @@ When refactoring an insight, follow this workflow:
    chmod +x scripts/generate-report-parts/NNN-name.sh
    ```
 
-5. **Test**:
+5. **Test** (outputs generated markdown):
    ```bash
-   pnpm generate-report 'NNN-name.sh'
+   # Test your insight script - outputs the generated markdown to stdout
+   pnpm generate-report '175-mcp-enabled-last-month.sh'
+
+   # Or with verbose logging to see which files are being processed
+   pnpm generate-report --verbose '175-mcp-enabled-last-month.sh'
    ```
 
 ## Script Template
@@ -443,22 +448,51 @@ $(echo $(ionos.loop-duckdb.exec_duckdb "$SQL LIMIT 10;" '-json') | jq -r --arg t
 
 ## Testing
 
+### Testing Single Insights
+
+**Test a single insight script** by passing its filename to `generate-report`:
+
 ```bash
-# Develop queries interactively
+# Test your insight - outputs the generated markdown to stdout
+pnpm generate-report '175-mcp-enabled-last-month.sh'
+```
+
+**Output**: The command will execute only the specified script and output the generated markdown content to stdout. This allows you to:
+- Verify the markdown formatting is correct
+- Check that tables and charts render properly
+- Debug SQL queries and jq transformations
+- Iterate quickly without running the full report
+
+### Testing Options
+
+```bash
+# Develop queries interactively in DuckDB UI
 pnpm start-report-ui
 
-# Test single script (no verbose output by default)
-pnpm generate-report 'NNN-name.sh'
+# Test single script (outputs markdown)
+pnpm generate-report '175-mcp-enabled-last-month.sh'
 
-# Verbose output (shows which files are being processed)
-pnpm generate-report --verbose 'NNN-name.sh'
+# Verbose mode - shows which files are being processed
+pnpm generate-report --verbose '175-mcp-enabled-last-month.sh'
 
-# Dry run (see what would execute without running)
-pnpm generate-report --dry-run 'NNN-name.sh'
+# Dry run - see what would execute without running
+pnpm generate-report --dry-run '175-mcp-enabled-last-month.sh'
 
 # Generate with PDF output
-pnpm generate-report --pdf 'NNN-name.sh'
+pnpm generate-report --pdf '175-mcp-enabled-last-month.sh'
+
+# Test multiple insights
+pnpm generate-report '170-*.sh' '180-*.sh'
 ```
+
+### Testing Workflow
+
+1. **Develop SQL query** in DuckDB UI (`pnpm start-report-ui`)
+2. **Create insight script** with the query
+3. **Make executable** (`chmod +x scripts/generate-report-parts/175-mcp-enabled-last-month.sh`)
+4. **Test immediately** (`pnpm generate-report '175-mcp-enabled-last-month.sh'`)
+5. **Review markdown output** in stdout
+6. **Iterate** until output is correct
 
 ## Common Patterns
 
