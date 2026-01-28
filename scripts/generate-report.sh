@@ -153,7 +153,7 @@ done
 # format the markdown report using prettier
 if [[ ! "$DRY_RUN" =~ true|yes ]]; then
   pnpm exec prettier --write ./${REPORT_NAME}/${REPORT_NAME}.md
-  pnpm exec node scripts/report-2-pdf.js ./${REPORT_NAME}/${REPORT_NAME}.md
+  [[ "$PDF" =~ true|yes ]] && pnpm exec node scripts/report-2-pdf.js ./${REPORT_NAME}/${REPORT_NAME}.md ||:
 fi
 
 exit 
