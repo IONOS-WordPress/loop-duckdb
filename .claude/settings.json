@@ -1,0 +1,8 @@
+{
+  "enabledMcpjsonServers": ["duckdb"],
+  "enableAllProjectMcpServers": true,
+  "permissions": {
+    "allow": ["mcp__duckdb__*"]
+  },
+  "skillDirs": ["./docs/skills"]
+}
