@@ -55,7 +55,7 @@ function ionos.loop-duckdb.exec_duckdb() {
     -v $(pwd)/s3:/local/s3 \
     -v $(pwd)/${REPORT_NAME}:/local/${REPORT_NAME} \
     --net host \
-    -it \
+    -t \
     --entrypoint /usr/bin/bash \
     datacatering/duckdb:v1.3.2 -c "
       # start duckdb
