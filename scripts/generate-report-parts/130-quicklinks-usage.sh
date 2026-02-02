@@ -14,8 +14,14 @@ WITH LatestInstances AS (
   FROM
     loop_items
 ),
+TotalInstances AS (
+  -- 2. Calculate total number of unique instances
+  SELECT COUNT(DISTINCT instance) AS total_count
+  FROM LatestInstances
+  WHERE rn = 1
+),
 NBAsUnnested AS (
-  -- 2. Unnest the NBA statuses ONLY from the latest records (rn = 1)
+  -- 3. Unnest the NBA statuses ONLY from the latest records (rn = 1)
   SELECT
     i.instance,
     t.key AS quick_link,
@@ -30,18 +36,18 @@ NBAsUnnested AS (
   WHERE
     i.rn = 1 
 )
--- 3. Calculate the percentage per quick link
+-- 4. Calculate the percentage per quick link based on ALL instances
 SELECT
   quick_link,
-  COUNT(DISTINCT instance) AS "Total Instances Available",
+  COUNT(DISTINCT instance) AS "Instances with Quick Link Available",
   SUM(CASE WHEN value::VARCHAR = '"completed"' THEN 1 ELSE 0 END) AS "Completed Instances",
-  ROUND((SUM(CASE WHEN value::VARCHAR = '"completed"' THEN 1 ELSE 0 END) * 100.0) / COUNT(DISTINCT instance), 2) AS "Completion Percentage (%)"
+  ROUND((SUM(CASE WHEN value::VARCHAR = '"completed"' THEN 1 ELSE 0 END) * 100.0) / (SELECT total_count FROM TotalInstances), 2) AS "Completion Percentage (% of all instances)"
 FROM
   NBAsUnnested
 GROUP BY
   quick_link
 ORDER BY
-  "Completion Percentage (%)" DESC;
+  "Completion Percentage (% of all instances)" DESC;
 EOF
 )
 
@@ -52,12 +58,10 @@ cat <<EOF
 
 $(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-markdown'))
 
-\`\`\`mermaid
+\\\`mermaid
 $(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-json') | jq -r --arg title "$TITLE" '
   "pie showData" , #  title \($title)
-  (.[] | "  \"\(.quick_link)\" : \(.["Completion Percentage (%)"])")
+  (.[] | "  \"\(.quick_link)\" : \(.["Completion Percentage (% of all instances)"])")
 ')
-\`\`\`
+\\\`
 EOF
-
-
