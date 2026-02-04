@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 #
-# generates quicklinks related questions markdown output for "Clicks:Quick Links usage"
-# % of users having used the quick link # of clicks per user
+# generates NBA status related questions markdown output for "NBA Status completion"
+# % of users having completed NBA status items # of users having seen the NBA status item
 # 
 
 SQL=$(cat <<EOF
@@ -24,7 +24,7 @@ NBAsUnnested AS (
   -- 3. Unnest the NBA statuses ONLY from the latest records (rn = 1)
   SELECT
     i.instance,
-    t.key AS quick_link,
+    t.key AS nba_status,
     t.value
   FROM
     LatestInstances AS i,
@@ -36,23 +36,23 @@ NBAsUnnested AS (
   WHERE
     i.rn = 1 
 )
--- 4. Calculate the percentage per quick link based on ALL instances
+-- 4. Calculate the percentage per NBA status based on ALL instances
 SELECT
-  quick_link,
-  COUNT(DISTINCT instance) AS "Instances with Quick Link Available",
+  nba_status,
+  COUNT(DISTINCT instance) AS "Instances with NBA Status Available",
   SUM(CASE WHEN value::VARCHAR = '"completed"' THEN 1 ELSE 0 END) AS "Completed Instances",
   ROUND((SUM(CASE WHEN value::VARCHAR = '"completed"' THEN 1 ELSE 0 END) * 100.0) / (SELECT total_count FROM TotalInstances), 2) AS "Completion Percentage (% of all instances)",
-  ROUND((COUNT(DISTINCT instance) * 100.0) / (SELECT total_count FROM TotalInstances), 2) AS "Clicked At Least Once (% of all customers)"
+  ROUND((COUNT(DISTINCT instance) * 100.0) / (SELECT total_count FROM TotalInstances), 2) AS "Seen At Least Once (% of all customers)"
 FROM
   NBAsUnnested
 GROUP BY
-  quick_link
+  nba_status
 ORDER BY
   "Completion Percentage (% of all instances)" DESC;
 EOF
 )
 
-readonly TITLE="How many users have clicked on quick links?"
+readonly TITLE="How many users have completed NBA status items?"
 
 cat <<EOF
 # $TITLE
@@ -62,7 +62,7 @@ $(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-markdown'))
 \\\`mermaid
 $(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-json') | jq -r --arg title "$TITLE" '
   "pie showData" , #  title \($title)
-  (.[] | "  \"\(.quick_link)\" : \(.["Completion Percentage (% of all instances)"])")
+  (.[] | "  \"\(.nba_status)\" : \(.\["Completion Percentage (% of all instances)"\])")
 ')
 \\\`
 EOF
