@@ -14,12 +14,12 @@ ionos.loop-duckdb.exec_duckdb "
   -- create parquet file from loop json files
   ATTACH ':memory:' AS in_memory;
   COPY (
-    SELECT 
-      filename, 
+    SELECT
+      filename,
       * EXCLUDE (timestamp),
       to_timestamp(timestamp) AS timestamp -- timestamp was a bigint, convert to timestamp type
     FROM read_json_auto(
-      './s3/**/*.json', 
+      './s3/**/*.json',
       filename = true, -- Crucial: Ensures the filename is included as a column
       ignore_errors = true,
       columns = {
@@ -32,10 +32,10 @@ ionos.loop-duckdb.exec_duckdb "
         instance: 'VARCHAR',
         timestamp: 'BIGINT',
       }
-    ) 
+    )
     WHERE
       version = '1.0'
   )
   TO './${REPORT_NAME}/${REPORT_NAME}.parquet' (FORMAT PARQUET, OVERWRITE TRUE);
-"
+" 
 

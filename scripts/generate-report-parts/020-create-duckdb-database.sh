@@ -5,6 +5,9 @@
 #
 
 ionos.loop-duckdb.exec_duckdb "
+-- disable progress bar to prevent the progress output from being included in the report
+SET enable_progress_bar = false;
+
 -- table with all loop items
 CREATE OR REPLACE TABLE loop_items AS
   SELECT
