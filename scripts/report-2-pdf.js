@@ -12,8 +12,7 @@ import fs from "node:fs";
   its not intended to be run manually
 */
 
-// Path to your local Chrome (Adjust for your OS)
-const CHROME_PATH = "/usr/bin/google-chrome-stable";
+const CHROME_PATH = process.platform === "linux" ? "/usr/bin/google-chrome-stable" : "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
 const markdownFilePath = path.resolve(process.argv[2] || "./generate-report/generate-report.md");
 
