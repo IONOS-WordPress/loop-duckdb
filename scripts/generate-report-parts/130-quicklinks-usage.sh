@@ -41,7 +41,8 @@ SELECT
   quick_link,
   COUNT(DISTINCT instance) AS "Instances with Quick Link Available",
   SUM(CASE WHEN value::VARCHAR = '"completed"' THEN 1 ELSE 0 END) AS "Completed Instances",
-  ROUND((SUM(CASE WHEN value::VARCHAR = '"completed"' THEN 1 ELSE 0 END) * 100.0) / (SELECT total_count FROM TotalInstances), 2) AS "Completion Percentage (% of all instances)"
+  ROUND((SUM(CASE WHEN value::VARCHAR = '"completed"' THEN 1 ELSE 0 END) * 100.0) / (SELECT total_count FROM TotalInstances), 2) AS "Completion Percentage (% of all instances)",
+  ROUND((COUNT(DISTINCT instance) * 100.0) / (SELECT total_count FROM TotalInstances), 2) AS "Clicked At Least Once (% of all customers)"
 FROM
   NBAsUnnested
 GROUP BY
