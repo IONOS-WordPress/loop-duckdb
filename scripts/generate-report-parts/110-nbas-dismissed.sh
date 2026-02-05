@@ -2,63 +2,50 @@
 
 #
 # generates nba related questions markdown output for "nbas dismissed"
-# Are NBAs used? Especially: are they dismissed? What’s dismissed
-# Most dismissed actions? => need to be changed
-# Table: nba | completed % | dismissed % | done % | count
+# Are NBAs used? Especially: are they dismissed? What's dismissed
+# 
+# Table: nba | count | completed % | dismissed % | not started %
 # 
 
 readonly SQL="
 WITH NBAStatus AS (
-    -- Extract the entire nba_status object as a JSON type
-    SELECT
-        instance,
-        plugin_data->'ionos-essentials'->'dashboard'->>'nba_status' AS nba_data
-    FROM
-        loop_items
+    SELECT instance, plugin_data->'ionos-essentials'->'dashboard'->>'nba_status' AS nba_data
+    FROM loop_items
+    WHERE plugin_data->'ionos-essentials'->'dashboard'->>'nba_status' IS NOT NULL
 ),
 UnpivotedNBA AS (
-    -- Get list of all keys from the NBA object and UNNEST them
-    SELECT
-        instance,
-        t1.nba_data,
-        unnest(json_keys(t1.nba_data)) AS nba_key
-    FROM
-        NBAStatus t1
-    WHERE
-        t1.nba_data IS NOT NULL -- Only proceed if the nba_status object exists
+    SELECT instance, unnest(json_keys(nba_data)) AS nba_key, json_extract_string(nba_data, '$.' || nba_key) AS status
+    FROM NBAStatus
 ),
-StatusLookup AS (
-    -- Extract the status value for each key.
+TotalInstances AS (
+    SELECT COUNT(DISTINCT instance) AS total_count FROM loop_items
+),
+SummaryByNBA AS (
     SELECT
-        instance,
         nba_key,
-        -- Dynamically extract the value based on the nba_key
-        json_extract_string(nba_data, '$.' || nba_key) AS status
-    FROM
-        UnpivotedNBA
+        COUNT(DISTINCT instance) AS instances_with_nba,
+        COUNT(DISTINCT CASE WHEN status = 'completed' THEN instance END) AS completed_count,
+        COUNT(DISTINCT CASE WHEN status = 'dismissed' THEN instance END) AS dismissed_count,
+        COUNT(DISTINCT CASE WHEN status IS NULL THEN instance END) AS not_started_count
+    FROM UnpivotedNBA
+    GROUP BY nba_key
 )
--- Aggregate and calculate percentages
 SELECT
     nba_key AS nba,
-    (COUNT(CASE WHEN status = 'completed' THEN 1 END) * 100.0 / COUNT(DISTINCT instance))::NUMERIC(5, 2) AS 'completed %',
-    (COUNT(CASE WHEN status = 'dismissed' THEN 1 END) * 100.0 / COUNT(DISTINCT instance))::NUMERIC(5, 2) AS 'dismissed %',
-    -- 'done' is interpreted as status is NULL or empty string (meaning the item is present but status is complete/pending)
-    (COUNT(CASE WHEN status IS NULL OR status = '' THEN 1 END) * 100.0 / COUNT(DISTINCT instance))::NUMERIC(5, 2) AS 'done %',
-    COUNT(DISTINCT instance) AS count
-FROM
-    StatusLookup
-GROUP BY
-    nba_key
-ORDER BY
-    count DESC, nba_key
+    instances_with_nba AS count,
+    (completed_count * 100.0 / (SELECT total_count FROM TotalInstances))::NUMERIC(5, 2) AS 'completed %',
+    (dismissed_count * 100.0 / (SELECT total_count FROM TotalInstances))::NUMERIC(5, 2) AS 'dismissed %',
+    (not_started_count * 100.0 / (SELECT total_count FROM TotalInstances))::NUMERIC(5, 2) AS 'not started %'
+FROM SummaryByNBA
+ORDER BY instances_with_nba DESC, nba_key
 ;
 "
 
 readonly TITLE="What NBAs are used?"
 
-cat <<EOF
+cat <<EOFMD
 
 # $TITLE
 
 $(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-markdown'))
-EOF
+EOFMD
