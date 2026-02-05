@@ -45,11 +45,11 @@ EOF
 
 cat <<EOF
 
-# How many NBAs are done (per unique customer) ?
+## How many NBAs are done (per unique customer) ?
 
 **$(echo $(ionos.loop-duckdb.exec_duckdb "$(SQL '"completed"')" '-json') | jq -r '.[0] | (.overall_percentage)')%** of all NBAs are completed.
 
-# How many NBAs are still open (at time of retrieval) ?
+## How many NBAs are still open (at time of retrieval) ?
 
 **$(echo $(ionos.loop-duckdb.exec_duckdb "$(SQL 'null')" '-json') | jq -r '.[0] | (.overall_percentage)')%** of all NBAs are open.
 EOF

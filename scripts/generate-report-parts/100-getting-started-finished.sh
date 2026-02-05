@@ -19,6 +19,8 @@ SELECT
   COUNT(DISTINCT instance) AS unique_instance_count
 FROM
   loop_items
+WHERE
+  events like '%login%'
 GROUP BY
   nba_setup_status
 ORDER BY
@@ -26,7 +28,7 @@ ORDER BY
 ;
 "
 
-readonly TITLE="Is the Getting Started Dialog finished?"
+readonly TITLE="Is the Getting Started Dialog finished? (limited to active users)"
 
 cat <<EOF
 

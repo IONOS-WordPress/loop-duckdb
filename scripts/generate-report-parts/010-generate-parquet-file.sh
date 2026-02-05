@@ -19,7 +19,7 @@ ionos.loop-duckdb.exec_duckdb "
       * EXCLUDE (timestamp),
       to_timestamp(timestamp) AS timestamp -- timestamp was a bigint, convert to timestamp type
     FROM read_json_auto(
-      './s3/2026*/*.json', 
+      './s3/2026-01-1*/*.json', 
       filename = true, -- Crucial: Ensures the filename is included as a column
       ignore_errors = true,
       columns = {
