@@ -7,43 +7,55 @@
 #
 
 SQL=$(cat <<EOF
-WITH LatestInstances AS (
-  -- 1. Identify the single, most recent record for each unique instance
+WITH AllInstances AS (
+  -- 1. Get all records (including historical) for each instance
   SELECT
-    *,
-    ROW_NUMBER() OVER (PARTITION BY instance ORDER BY "timestamp" DESC) AS rn
+    instance,
+    clicks
   FROM
     loop_items
+  WHERE
+    clicks IS NOT NULL
 ),
 TotalInstances AS (
   -- 2. Calculate total number of unique instances
   SELECT COUNT(DISTINCT instance) AS total_count
-  FROM LatestInstances
-  WHERE rn = 1
+  FROM loop_items
 ),
 ClicksUnnested AS (
-  -- 3. Unnest the clicks object ONLY from the latest records (rn = 1)
+  -- 3. Unnest the clicks object from ALL records for each instance
   SELECT
     i.instance,
     t.key AS quicklink_id,
     t.value::INTEGER AS click_count
   FROM
-    LatestInstances AS i
+    AllInstances AS i
   CROSS JOIN
     LATERAL (SELECT * FROM json_each(i.clicks)) AS t(key, value)
   WHERE
-    i.rn = 1 
-    AND i.clicks IS NOT NULL
+    i.clicks IS NOT NULL
+),
+ClicksSummed AS (
+  -- 4. Sum clicks per instance per quicklink
+  SELECT
+    instance,
+    quicklink_id,
+    SUM(click_count) AS total_instance_clicks
+  FROM
+    ClicksUnnested
+  GROUP BY
+    instance,
+    quicklink_id
 )
--- 4. Calculate click statistics per quicklink
+-- 5. Calculate aggregated statistics per quicklink
 SELECT
   quicklink_id,
-  SUM(click_count) AS "Total Clicks",
-  COUNT(DISTINCT instance) AS "Instances Clicked",
-  ROUND((COUNT(DISTINCT instance) * 100.0) / (SELECT total_count FROM TotalInstances), 2) AS "Users Clicked (%)",
-  ROUND(SUM(click_count)::NUMERIC / COUNT(DISTINCT instance), 2) AS "Avg Clicks per User"
+  SUM(total_instance_clicks) AS "Total Clicks on this Quicklink",
+  COUNT(DISTINCT instance) AS "Different Users Clicked on this Quicklink",
+  ROUND((COUNT(DISTINCT instance) * 100.0) / (SELECT total_count FROM TotalInstances), 2) AS "Engagement Rate (%)",
+  ROUND(SUM(total_instance_clicks)::NUMERIC / COUNT(DISTINCT instance), 2) AS "Average Clicks per User"
 FROM
-  ClicksUnnested
+  ClicksSummed
 GROUP BY
   quicklink_id
 ORDER BY
