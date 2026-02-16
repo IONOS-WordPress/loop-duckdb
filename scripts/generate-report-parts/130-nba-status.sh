@@ -61,8 +61,8 @@ $(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-markdown'))
 
 \\\`mermaid
 $(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-json') | jq -r --arg title "$TITLE" '
-  "pie showData" , #  title \($title)
-  (.[] | "  \"\(.nba_status)\" : \(.\["Completion Percentage (% of all instances)"\])")
+  "pie showData",
+  (.[] | "  \"\(.nba_status)\" : \(.\"Completion Percentage (% of all instances)\")")
 ')
 \\\`
 EOF
