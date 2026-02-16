@@ -80,11 +80,18 @@ cat <<EOF
 
 $(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-markdown'))
 
-\\\`mermaid
+\`\`\`mermaid
+---
+config:
+    xyChart:
+        width: 1000
+        height: 600
+        showDataLabel: false
+---
 $(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-json') | jq -r --arg title "$TITLE" '
-  "bar" , 
-  "  x: [" + ([.[].quicklink_id] | map("\"" + . + "\"") | join(",")) + "]",
-  "  y: [" + ([.[]."Total Clicks"] | join(",")) + "]"
+  "xychart-beta" , 
+  "  x-axis [" + ([.[].quicklink_id] | map("\"" + . + "\"") | join(",")) + "]",
+  "  bar [" + ([.[]."Total Clicks on this Quicklink"] | join(",")) + "]"
 ')
-\\\`
+\`\`\`
 EOF
