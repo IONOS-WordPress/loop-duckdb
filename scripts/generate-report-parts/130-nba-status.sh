@@ -54,21 +54,15 @@ EOF
 
 readonly TITLE="How many users have completed NBA status items?"
 
-cat <<'EOF'
-# How many users have completed NBA status items?
+cat <<EOF
+# $TITLE
 
-EOF
+$(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-markdown'))
 
-echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-markdown')
-
-cat <<'EOF'
-
-\`mermaid
-EOF
-
-FIELD='Completion Percentage (% of all instances)'
-echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-json') | jq -r --arg field "$FIELD" 'def getfield: .[$field]; . as $root | "pie showData", ($root[] | "  \"\(.nba_status)\" : \(getfield)")' 
-
-cat <<'EOF'
-\`
+\`\`\`mermaid
+$(echo $(ionos.loop-duckdb.exec_duckdb "$SQL" '-json') | jq -r --arg title "$TITLE" '
+  "pie showData",
+  (.[] | "  \"\(.nba_status)\" : \(.["Completion Percentage (% of all instances)"])")
+')
+\`\`\`
 EOF
