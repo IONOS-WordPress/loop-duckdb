@@ -4,11 +4,11 @@ set -euo pipefail
 
 REPORT_NAME="${REPORT_NAME:-generate-report}"
 CSV_OUTPUT="$REPORT_NAME/plugin_versions_by_instance.csv"
-TITLE="Plugin-Versionen nach Instanz (nur aktuellste, ≥500 Instanzen)"
+TITLE="Plugin Versions by Instance (latest only, ≥500 instances)"
 
 mkdir -p "$REPORT_NAME"
 
-# SQL für Plugin-Versionen mit Prozent-Spalte
+# SQL for plugin versions with percentage column
 SQL="
 WITH total_instances AS (
   SELECT COUNT(DISTINCT recent_loops.instance) AS total FROM recent_loops
@@ -37,20 +37,27 @@ ORDER BY nr;
 # CSV export
 ionos.loop-duckdb.exec_duckdb "$SQL" '-csv' > "$CSV_OUTPUT"
 
-# Markdown-Report
+# Markdown report with pie chart
 cat <<EOF
 # $TITLE
 
-| # | Plugin | Version | Instanzanzahl | Anteil an Instanzen (%) |
-|---|--------|---------|---------------|------------------------|
+| # | Plugin | Version | Instance Count | Share of Instances (%) |
+|---|--------|---------|----------------|-----------------------|
 $(ionos.loop-duckdb.exec_duckdb "$SQL;" '-markdown')
 
-**Hinweis:**  
-01-ext-Plugins sind ausgeschlossen.  
-Es werden nur Plugin-Versionen berücksichtigt, die auf **mindestens 500 Instanzen** installiert sind.
+\`\`\`mermaid
+$(echo $(ionos.loop-duckdb.exec_duckdb "$SQL LIMIT 10;" '-json') | jq -r --arg title "$TITLE" '
+    "pie showData title \($title)" ,
+    (.[] | "  \(.plugin) \(.version) : \(.instance_count)")
+')
+\`\`\`
+
+**Note:**  
+01-ext plugins are excluded.  
+Only plugin versions installed on **at least 500 instances** are included.
 
 ---
 
-Die vollständigen Daten sind als CSV exportiert:  
+The full data is exported as CSV:  
 \`$CSV_OUTPUT\`
 EOF
