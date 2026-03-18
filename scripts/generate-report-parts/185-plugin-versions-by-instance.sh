@@ -40,7 +40,7 @@ ionos.loop-duckdb.exec_duckdb "$SQL" '-csv' > "$CSV_OUTPUT"
 # Get total number of distinct instances
 TOTAL_INSTANCES=$(ionos.loop-duckdb.exec_duckdb \
   "SELECT COUNT(DISTINCT instance) FROM recent_loops;" \
-  '-noheader')
+  '-list')
 
 # Markdown report with pie chart
 cat <<EOF
