@@ -37,9 +37,16 @@ ORDER BY nr;
 # CSV export
 ionos.loop-duckdb.exec_duckdb "$SQL" '-csv' > "$CSV_OUTPUT"
 
+# Get total number of distinct instances
+TOTAL_INSTANCES=$(ionos.loop-duckdb.exec_duckdb \
+  "SELECT COUNT(DISTINCT instance) FROM recent_loops;" \
+  '-noheader')
+
 # Markdown report with pie chart
 cat <<EOF
 # $TITLE
+
+**Total instances analyzed:** $TOTAL_INSTANCES
 
 | # | Plugin | Version | Instance Count | Share of Instances (%) |
 |---|--------|---------|----------------|-----------------------|
