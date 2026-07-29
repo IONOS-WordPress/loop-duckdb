@@ -27,7 +27,7 @@ numbered_plugins AS (
     ON plugins.filename = recent_loops.filename
   WHERE plugins.plugin.plugin_slug NOT LIKE '01-ext-%'
   GROUP BY plugin, version
-  HAVING COUNT(DISTINCT recent_loops.instance) >= 500
+  HAVING COUNT(DISTINCT recent_loops.instance) >= 100
 )
 SELECT *
 FROM numbered_plugins

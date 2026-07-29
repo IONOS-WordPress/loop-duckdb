@@ -7,7 +7,8 @@ This project downloads WordPress instance data from S3, converts it to DuckDB fo
 # Requirements
 
 - **bash** - Shell scripting environment
-- **docker** - For running DuckDB and AWS CLI (no local installation needed)
+- **docker** - For running DuckDB (no local installation needed)
+- **s5cmd** - For syncing the Loop data from S3
 - **pnpm** - Package manager for Node.js dependencies
 - **uv** (optional) - Required for DuckDB MCP server integration with AI assistants
 
@@ -66,13 +67,12 @@ This project provides the following npm scripts (defined in [package.json](packa
 **Script**: `./scripts/download-loop-data-s3.sh`
 
 **Prerequisites**:
-- Docker installed and running
+- [s5cmd](https://github.com/peak/s5cmd) installed locally
 - AWS credentials configured in `.secrets` file
 
 **What it does**:
-1. Syncs all JSON files from the S3 `loop` bucket to `./s3/`
+1. Syncs all JSON files from the S3 `loop` bucket to `./s3/` using `s5cmd sync`
 2. Excludes the `duckdb/*` directory from sync
-3. Adjusts file permissions for local access
 
 **Dependencies**: None (first step in the workflow)
 
